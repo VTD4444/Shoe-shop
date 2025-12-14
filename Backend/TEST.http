@@ -1,0 +1,140 @@
+@baseUrl = http://localhost:5000
+@token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiODQzMGZkNGItYjZhMy00YWEzLThhMTctMDQ5MTVjNjQ0ZWRkIiwicm9sZSI6ImN1c3RvbWVyIiwiaWF0IjoxNzY1NjEzMDk3fQ.0dHDMmXgWhBELZjP4oyOjyWC9o9NqX7Uhyp9jDZw7UY
+### ==========================================
+### 1. TEST ĐĂNG KÝ (REGISTER)
+### ==========================================
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "full_name": "Nguyen Van Hieu",
+  "email": "hieutest12@gmail.com",
+  "password": "password123",
+  "phone_number": "0987654321"
+}
+
+### ==========================================
+### 2. TEST ĐĂNG NHẬP (LOGIN)
+### ==========================================
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "hieutest1@gmail.com",
+  "password": "newpassword456"
+}
+
+### ==========================================
+### 3. TEST LỖI VALIDATION (Thử nhập thiếu SĐT)
+### ==========================================
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "full_name": "User Loi",
+  "email": "loi@gmail.com",
+  "password": "123"
+}
+
+### ==========================================
+
+GET {{baseUrl}}/users/profile
+Authorization: Bearer {{token}}
+
+### ==========================================
+### 4. CẬP NHẬT HỒ SƠ (UPDATE PROFILE)
+### ==========================================
+PUT {{baseUrl}}/users/profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "full_name": "Nguyen Van A (Da Sua)",
+  "gender": "male",
+  "birth_date": "2000-10-20",
+  "phone_number": "0999888777"
+}
+
+### ==========================================
+### 6. ĐỔI MẬT KHẨU (CHANGE PASSWORD)
+### ==========================================
+PUT {{baseUrl}}/users/change-password
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "current_password": "password123",
+  "new_password": "newpassword456",
+  "confirm_password": "newpassword456"
+}
+
+### ==========================================
+### 8. LẤY DANH SÁCH ĐỊA CHỈ (GET)
+### ==========================================
+GET {{baseUrl}}/addresses
+Authorization: Bearer {{token}}
+
+
+### ==========================================
+### 10. THÊM ĐỊA CHỈ MỚI (POST)
+### ==========================================
+POST {{baseUrl}}/addresses
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "recipient_name": "Nguyen Van A",
+  "phone": "0912345678",
+  "street": "So 10 Ngo 12",
+  "ward": "Lang Thuong",
+  "district": "Dong Da",
+  "city": "Ha Noi",
+  "is_default": true
+}
+
+### Thêm một địa chỉ nữa (để test danh sách)
+POST {{baseUrl}}/addresses
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "recipient_name": "Tran Van C",
+  "phone": "0987654321",
+  "street": "So 123 Duong Lang",
+  "ward": "Lang Ha",
+  "district": "Dong Da",
+  "city": "Ha Noi",
+  "is_default": true
+}
+
+
+### ==========================================
+### 11. SỬA ĐỊA CHỈ (PUT)
+### ==========================================
+# ⚠️ HƯỚNG DẪN:
+# 1. Chạy API "Lấy danh sách" ở trên.
+# 2. Copy một cái "address_id" bất kỳ (ví dụ: "a1b2c3d4...").
+# 3. Thay thế vào chỗ <ID_DIA_CHI> ở link bên dưới.
+@addressId =65e665a8-86c2-4893-babc-2ec120e4fa98
+PUT {{baseUrl}}/addresses/{{addressId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "recipient_name": "Nguyen Van C (Da Sua)",
+  "phone": "0999888777",
+  "street": "So 1330 Ngo 12 (Sua)",
+  "ward": "Lang Thuong",
+  "district": "Dong Da",
+  "city": "Ha Noi",
+  "is_default": true
+}
+
+
+### ==========================================
+### 12. XÓA ĐỊA CHỈ (DELETE)
+### ==========================================
+# ⚠️ HƯỚNG DẪN: Thay ID cần xóa vào chỗ <ID_DIA_CHI>
+
+DELETE {{baseUrl}}/addresses/{{addressId}}
+Authorization: Bearer {{token}}
