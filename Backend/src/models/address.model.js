@@ -3,7 +3,6 @@ import { Model } from 'sequelize';
 export default (sequelize, DataTypes) => {
   class Address extends Model {
     static associate(models) {
-      this.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' });
     }
   }
 

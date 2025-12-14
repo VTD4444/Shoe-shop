@@ -138,3 +138,57 @@ Content-Type: application/json
 
 DELETE {{baseUrl}}/addresses/{{addressId}}
 Authorization: Bearer {{token}}
+
+### ==========================================
+### 13. TÌM KIẾM SẢN PHẨM (SEARCH)
+### ==========================================
+
+# Test 1: Lấy tất cả (sẽ ra 2 sản phẩm)
+POST {{baseUrl}}/products/search
+Content-Type: application/json
+
+{
+  "page": 1,
+  "limit": 10
+}
+
+### Test 2: Tìm theo tên "Nike" (sẽ ra 1 sản phẩm)
+POST {{baseUrl}}/products/search
+Content-Type: application/json
+
+{
+}
+
+### Test 3: Lọc theo giá (từ 4 triệu trở lên -> ra Adidas)
+POST {{baseUrl}}/products/search
+Content-Type: application/json
+
+{
+  "min_price": 4000000
+}
+
+### ==========================================
+### 14. LẤY DỮ LIỆU BỘ LỌC (FULL OPTIONS)
+### ==========================================
+GET {{baseUrl}}/products/filters
+
+
+### ==========================================
+### 15. LẤY TOP BÁN CHẠY (TRENDING)
+### ==========================================
+GET {{baseUrl}}/products/trending?limit=5
+
+### ==========================================
+### 16. LẤY CHI TIẾT SẢN PHẨM (DETAIL)
+### ==========================================
+
+# Bước 1: Gọi search để lấy ID trước (nếu quên)
+POST {{baseUrl}}/products/search
+Content-Type: application/json
+
+{
+}
+###
+
+# Bước 2: Thay ID sản phẩm vào chỗ <ID_SAN_PHAM>
+GET {{baseUrl}}/products/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22

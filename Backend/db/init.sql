@@ -42,7 +42,7 @@ CREATE TABLE addresses (
 
 CREATE TABLE brands (
     brand_id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL, -- Brand phải có tên
+    name VARCHAR(100) NOT NULL,
     logo_url TEXT
 );
 
@@ -50,7 +50,6 @@ CREATE TABLE categories (
     category_id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL, -- Category phải có tên
     parent_id INTEGER,
-    description TEXT
 );
 
 CREATE TABLE products (
@@ -177,3 +176,39 @@ CREATE INDEX idx_orders_user ON orders(user_id);
 
 -- review
 CREATE INDEX idx_reviews_product ON reviews(product_id);
+
+INSERT INTO brands (brand_id, name, logo_url) VALUES
+(1, 'Nike', 'https://upload.wikimedia.org/wikipedia/commons/a/a6/Logo_NIKE.svg'),
+(2, 'Adidas', 'https://upload.wikimedia.org/wikipedia/commons/2/20/Adidas_Logo.svg');
+
+-- 2. Thêm Categories (Danh mục)
+INSERT INTO categories (category_id, name) VALUES
+(1, 'Giày Chạy Bộ'),
+(2, 'Giày Bóng Rổ');
+
+-- 3. Thêm Sản phẩm (Products)
+-- Mình dùng UUID cứng để dễ link với bảng con, đỡ phải select lại
+INSERT INTO products (product_id, name, base_price, brand_id, category_id, description, average_rating, sold_count, created_at, updated_at)
+VALUES
+('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Nike Air Max 90', 3500000, 1, 1, 'Giày chạy bộ quốc dân, thiết kế huyền thoại.', 4.5, 120, NOW(), NOW()),
+('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 'Adidas Ultraboost 22', 4200000, 2, 1, 'Công nghệ Boost êm ái nhất thế giới.', 4.8, 50, NOW(), NOW());
+
+-- 4. Thêm Biến thể (Variants)
+-- Nike Air Max (3 biến thể: 2 Đỏ, 1 Đen) -> API Search sẽ đếm ra total_variants = 3
+INSERT INTO product_variants (variant_id, product_id, sku, color_name, size, stock_quantity, price_modifier,created_at,updated_at) VALUES
+(gen_random_uuid(), 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'NIKE-AM90-RED-42', 'Red', '42', 10, 0,NOW(), NOW()),
+(gen_random_uuid(), 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'NIKE-AM90-RED-43', 'Red', '43', 5, 0,NOW(), NOW()),
+(gen_random_uuid(), 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'NIKE-AM90-BLK-42', 'Black', '42', 8, 0,NOW(), NOW());
+
+-- Adidas Ultraboost (1 biến thể) -> total_variants = 1
+INSERT INTO product_variants (variant_id, product_id, sku, color_name, size, stock_quantity, price_modifier,created_at,updated_at) VALUES
+(gen_random_uuid(), 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 'ADI-ULTRA-WHT-40', 'White', '40', 20, 0,NOW(), NOW());
+
+-- 5. Thêm Ảnh (Media)
+INSERT INTO product_media (media_id, product_id, url, is_thumbnail, media_type) VALUES
+-- Ảnh thumbnail cho Nike
+(gen_random_uuid(), 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/wzitsrb4oucx9xlfzjwz/air-max-90-shoes-mnCmVT.png', true, 'image'),
+-- Ảnh chi tiết cho Nike (không phải thumbnail)
+(gen_random_uuid(), 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/i1-99507d3b-313d-4c3d-9860-392070c73294/air-max-90-shoes-mnCmVT.png', false, 'image'),
+-- Ảnh thumbnail cho Adidas
+(gen_random_uuid(), 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 'https://assets.adidas.com/images/w_600,f_auto,q_auto/35928d32785d47159781af50005d5363_9366/Ultraboost_Light_Running_Shoes_White_HQ6351_01_standard.jpg', true, 'image');

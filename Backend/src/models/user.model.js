@@ -3,8 +3,6 @@ import { Model } from 'sequelize';
 export default (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
-      // Định nghĩa quan hệ sau này (ví dụ: User có nhiều Order)
-      // this.hasMany(models.Order, { foreignKey: 'userId' });
     }
   }
 
