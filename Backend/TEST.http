@@ -201,7 +201,7 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "variant_id": "d4ee5566-ff77-8899-00aa-bbccddeeff03",
+  "variant_id": "d4ee5566-ff77-8899-00aa-bbccddeeff01",
   "quantity": 1
 }
 
@@ -210,3 +210,17 @@ Content-Type: application/json
 ### ==========================================
 GET {{baseUrl}}/cart
 Authorization: Bearer {{token}}
+
+
+
+### ==========================================
+### 19. CẬP NHẬT SỐ LƯỢNG (PUT /cart/:id)
+### ==========================================
+# Thay <CART_ITEM_ID> bằng ID thực tế lấy từ API Get Cart
+PUT {{baseUrl}}/cart/d7d3e6f0-9bd0-479b-9655-3c1f729237c6
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "quantity": 5
+}

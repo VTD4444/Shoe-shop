@@ -66,12 +66,12 @@ const getCart = asyncHandler(async (req, res) => {
           {
             model: db.Product,
               as: 'product',
-            attributes: ['name', 'base_price'],
+            attributes: ['name', 'base_price',"product_id"],
             include: [
               {
                 model: db.ProductMedia,
                 as: 'media',
-                // where: { is_thumbnail: true },
+                where: { is_thumbnail: true },
                 attributes: ['url'],
                 required: false,
                 limit: 1
@@ -84,12 +84,12 @@ const getCart = asyncHandler(async (req, res) => {
     order: [['created_at', 'DESC']]
   });
 
+
   let totalPrice = 0;
   let totalItems = 0;
     console.log(JSON.stringify(cartItems, null, 2));
   const formattedItems = cartItems.map(item => {
     if (!item.variant || !item.variant.product) return null;
-
     const variant = item.variant;
     const product = variant.product;
 
@@ -129,7 +129,60 @@ const getCart = asyncHandler(async (req, res) => {
     items: formattedItems
   });
 });
+
+
+// 19. Cập nhật số lượng (PUT /cart/:id)
+const updateCartItem = asyncHandler(async (req, res) => {
+  const userId = req.user.user_id;
+  const { id } = req.params; // Lấy cart_item_id từ URL
+  const { quantity } = req.body;
+
+  const newQty = parseInt(quantity);
+  if (!newQty || newQty <= 0) {
+    return res.status(400).json({ message: 'Số lượng phải lớn hơn 0' });
+  }
+
+  // 1. Tìm Cart Item (kèm thông tin Variant + Product để tính tiền và check kho)
+  const cartItem = await db.CartItem.findOne({
+    where: {
+      cart_item_id: id,
+      user_id: userId // Quan trọng: Chỉ sửa được giỏ hàng của chính mình
+    },
+    include: [
+      {
+        model: db.ProductVariant,
+        as: 'variant',
+        include: [{ model: db.Product, as: 'product' }]
+      }
+    ]
+  });
+
+  if (!cartItem) {
+    return res.status(404).json({ message: 'Không tìm thấy sản phẩm trong giỏ hàng' });
+  }
+
+  // 2. Kiểm tra tồn kho
+  const variant = cartItem.variant;
+  if (variant.stock_quantity < newQty) {
+    return res.status(400).json({ message: `Kho chỉ còn ${variant.stock_quantity} sản phẩm!` });
+  }
+
+  // 3. Cập nhật số lượng
+  cartItem.quantity = newQty;
+  await cartItem.save();
+
+  // 4. Tính toán thành tiền mới của item này (Item Total)
+  const unitPrice = parseFloat(variant.product.base_price) + (parseFloat(variant.price_modifier) || 0);
+  const newItemTotal = unitPrice * newQty;
+
+  return res.status(200).json({
+    message: 'Cập nhật thành công',
+    item_total: newItemTotal
+  });
+});
+
 export default {
   addToCart,
-  getCart
+  getCart,
+    updateCartItem,
 };
