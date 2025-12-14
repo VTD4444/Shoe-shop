@@ -23,7 +23,10 @@ db.Category = CategoryModel(sequelize, DataTypes);
 db.Product = ProductModel(sequelize, DataTypes);
 db.ProductVariant = ProductVariantModel(sequelize, DataTypes);
 db.ProductMedia = ProductMediaModel(sequelize, DataTypes);
-
+db.Voucher = VoucherModel(sequelize, DataTypes);
+db.CartItem = CartItemModel(sequelize, DataTypes);
+db.Order = OrderModel(sequelize, DataTypes);
+db.OrderItem = OrderItemModel(sequelize, DataTypes);
 
 // --- User & Address ---
 db.User.hasMany(db.Address, { foreignKey: 'user_id', as: 'addresses' });
@@ -39,12 +42,14 @@ db.Product.belongsTo(db.Category, { foreignKey: 'category_id', as: 'category' })
 
 // --- Product & Variant ---
 db.Product.hasMany(db.ProductVariant, { foreignKey: 'product_id', as: 'variants' });
-db.ProductVariant.belongsTo(db.Product, { foreignKey: 'product_id' });
+db.ProductVariant.belongsTo(db.Product, { foreignKey: 'product_id', as: 'product' });
 
 // --- Product & Media ---
 db.Product.hasMany(db.ProductMedia, { foreignKey: 'product_id', as: 'media' });
 db.ProductMedia.belongsTo(db.Product, { foreignKey: 'product_id' });
 
+db.ProductVariant.hasMany(db.ProductMedia, { foreignKey: 'variant_id', as: 'variant_media' });
+db.ProductMedia.belongsTo(db.ProductVariant, { foreignKey: 'variant_id' });
 
 // --- Cart (Giỏ hàng) ---
 // User có nhiều CartItem

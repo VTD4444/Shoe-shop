@@ -82,7 +82,11 @@ const updateAddress = asyncHandler(async (req, res) => {
   if (!address) {
     return res.status(404).json({ message: 'Địa chỉ không tồn tại hoặc không phải của bạn!' });
   }
-
+    if (address.is_default && is_default === false) {
+      return res.status(400).json({
+        message: 'Phải có ít nhất một địa chỉ mặc định'
+      });
+    }
   if (is_default === true) {
     await db.Address.update(
       { is_default: false },
