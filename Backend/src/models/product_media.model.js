@@ -5,6 +5,7 @@ export default (sequelize, DataTypes) => {
   ProductMedia.init({
     media_id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     product_id: { type: DataTypes.UUID },
+      variant_id: { type: DataTypes.UUID},
     url: { type: DataTypes.TEXT},
     media_type: { type: DataTypes.STRING, defaultValue: 'image' },
     is_thumbnail: { type: DataTypes.BOOLEAN, defaultValue: false }

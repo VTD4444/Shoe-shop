@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:5000
-@token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiODQzMGZkNGItYjZhMy00YWEzLThhMTctMDQ5MTVjNjQ0ZWRkIiwicm9sZSI6ImN1c3RvbWVyIiwiaWF0IjoxNzY1NjEzMDk3fQ.0dHDMmXgWhBELZjP4oyOjyWC9o9NqX7Uhyp9jDZw7UY
+@token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMTM4ODc5MWEtOGUzZC00OWMyLTlmMTktNjQ1NTU3MjkxZmFhIiwicm9sZSI6ImN1c3RvbWVyIiwiaWF0IjoxNzY1NzIyMjMyfQ.C3OzdO7BtN9QEL67yEnFwKc5YmAXp0oKrgl_RMlrOeA
 ### ==========================================
 ### 1. TEST ĐĂNG KÝ (REGISTER)
 ### ==========================================
@@ -20,8 +20,8 @@ POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "email": "hieutest1@gmail.com",
-  "password": "newpassword456"
+  "email": "hieutest12@gmail.com",
+  "password": "password123"
 }
 
 ### ==========================================
@@ -89,7 +89,7 @@ Content-Type: application/json
   "ward": "Lang Thuong",
   "district": "Dong Da",
   "city": "Ha Noi",
-  "is_default": true
+  "is_default": false
 }
 
 ### Thêm một địa chỉ nữa (để test danh sách)
@@ -115,19 +115,19 @@ Content-Type: application/json
 # 1. Chạy API "Lấy danh sách" ở trên.
 # 2. Copy một cái "address_id" bất kỳ (ví dụ: "a1b2c3d4...").
 # 3. Thay thế vào chỗ <ID_DIA_CHI> ở link bên dưới.
-@addressId =65e665a8-86c2-4893-babc-2ec120e4fa98
+@addressId =87a822e7-4612-4912-8a44-021610aa2765
 PUT {{baseUrl}}/addresses/{{addressId}}
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "recipient_name": "Nguyen Van C (Da Sua)",
+  "recipient_name": "Nguyen uuu (Da Sua)",
   "phone": "0999888777",
   "street": "So 1330 Ngo 12 (Sua)",
   "ward": "Lang Thuong",
   "district": "Dong Da",
   "city": "Ha Noi",
-  "is_default": true
+  "is_default": false
 }
 
 
@@ -191,4 +191,22 @@ Content-Type: application/json
 ###
 
 # Bước 2: Thay ID sản phẩm vào chỗ <ID_SAN_PHAM>
-GET {{baseUrl}}/products/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22
+GET {{baseUrl}}/products/c2dd3344-ee55-66ff-8899-aabbccddee02
+
+### ==========================================
+### 17. THÊM VÀO GIỎ HÀNG
+### ==========================================
+POST {{baseUrl}}/cart/add
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "variant_id": "d4ee5566-ff77-8899-00aa-bbccddeeff03",
+  "quantity": 1
+}
+
+### ==========================================
+### 18. XEM GIỎ HÀNG (GET CART)
+### ==========================================
+GET {{baseUrl}}/cart
+Authorization: Bearer {{token}}
