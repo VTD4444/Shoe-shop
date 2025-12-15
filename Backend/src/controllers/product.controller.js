@@ -14,11 +14,9 @@ const searchProducts = asyncHandler(async (req, res) => {
     max_price,
   } = req.body;
 
-  // 1. VALIDATION
   const pageNum = Math.max(1, parseInt(page));
   const limitNum = Math.min(Math.max(1, parseInt(limit)), 100);
 
-  // Ko dc âm và phải là số
   if (min_price && (isNaN(min_price) || min_price < 0)) {
     return res.status(400).json({ message: 'Giá tối thiểu không hợp lệ' });
   }
@@ -27,7 +25,6 @@ const searchProducts = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'Giá tối đa không hợp lệ' });
   }
 
-  // 2. BUILD WHERE CLAUSE
   const whereClause = {};
 
   if (q) {
@@ -35,7 +32,6 @@ const searchProducts = asyncHandler(async (req, res) => {
     whereClause.name = { [Op.iLike]: `%${sanitizedQuery}%` };
   }
 
-  // Parse IDs
   const parseIds = (ids) => {
     if (!ids) return [];
     if (Array.isArray(ids)) return ids.map(id => parseInt(id)).filter(id => !isNaN(id));
@@ -49,14 +45,12 @@ const searchProducts = asyncHandler(async (req, res) => {
   if (brandIdsArray.length > 0) whereClause.brand_id = { [Op.in]: brandIdsArray };
   if (categoryIdsArray.length > 0) whereClause.category_id = { [Op.in]: categoryIdsArray };
 
-  // Lọc giá
   if (min_price || max_price) {
     whereClause.base_price = {};
     if (min_price) whereClause.base_price[Op.gte] = parseFloat(min_price);
     if (max_price) whereClause.base_price[Op.lte] = parseFloat(max_price);
   }
 
-  // 3. SORTING
   const sortMap = {
     'price_asc': [['base_price', 'ASC']],
     'price_desc': [['base_price', 'DESC']],
@@ -68,7 +62,6 @@ const searchProducts = asyncHandler(async (req, res) => {
   const order = sortMap[sort_by] || sortMap['newest'];
   const offset = (pageNum - 1) * limitNum;
 
-  // 4. QUERY
   const { count, rows } = await db.Product.findAndCountAll({
     where: whereClause,
     limit: limitNum,
@@ -136,25 +129,20 @@ const products = rows.map(p => {
 const getFilterMetadata = asyncHandler(async (req, res) => {
   const [brands, categories, minPrice, maxPrice, sizesData, colorsData] = await Promise.all([
 
-    // 1. Lấy Brands
     db.Brand.findAll({
       attributes: ['brand_id', 'name'],
       order: [['name', 'ASC']]
     }),
 
-    // 2. Lấy Categories
     db.Category.findAll({
       attributes: ['category_id', 'name'],
       order: [['name', 'ASC']]
     }),
 
-    // 3. Min Price
     db.Product.min('base_price'),
 
-    // 4. Max Price
     db.Product.max('base_price'),
 
-    // 5. Lấy Sizes (Distinct - Không trùng lặp)
     db.ProductVariant.findAll({
       attributes: [
         [db.Sequelize.fn('DISTINCT', db.Sequelize.col('size')), 'size']
@@ -163,7 +151,6 @@ const getFilterMetadata = asyncHandler(async (req, res) => {
       raw: true
     }),
 
-    // 6. Lấy Colors (Distinct Name & Hex)
     db.ProductVariant.findAll({
       attributes: [
         [db.Sequelize.fn('DISTINCT', db.Sequelize.col('color_name')), 'name'],

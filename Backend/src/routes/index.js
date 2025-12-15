@@ -4,8 +4,8 @@ import auth from "./auth.routes.js";
 import address from "./address.route.js";
 import productRoutes from './product.route.js';
 import cartRoutes from './cart.route.js';
-const router = Router();
 import orderRoutes from './order.route.js';
+const router = Router();
 
 
 

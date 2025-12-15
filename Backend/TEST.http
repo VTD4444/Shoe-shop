@@ -325,3 +325,57 @@ Content-Type: application/json
 {
   "reason": "Tôi muốn đổi sang màu khác"
 }
+
+
+### ==========================================
+### 27. GỬI ĐÁNH GIÁ (SUBMIT REVIEW)
+### ==========================================
+
+### Case 1: Thành công (Đã mua + Đã nhận hàng)
+# Thay <PRODUCT_ID> và <ORDER_ID_COMPLETED>
+POST {{baseUrl}}/products/c2dd3344-ee55-66ff-8899-aabbccddee01/reviews
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "order_id": "b10f106f-ea66-405a-b752-6153c5be46c2",
+  "rating": 5,
+  "content": "Sản phẩm dùng rất tốt, tôi rất hài lòng."
+}
+
+### Case 2: Lỗi chưa mua (Hoặc đơn chưa completed)
+# Thay bằng một order_id đang pending hoặc order_id tào lao
+POST {{baseUrl}}/products/c2dd3344-ee55-66ff-8899-aabbccddee01/reviews
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "order_id": "b10f106f-ea66-405a-b752-6153c5be46c2",
+  "rating": 5,
+  "content": "Chưa nhận hàng mà đòi đánh giá."
+}
+
+### Case 3: Lỗi nội dung ngắn
+POST {{baseUrl}}/products/c2dd3344-ee55-66ff-8899-aabbccddee01/reviews
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "order_id": "b10f106f-ea66-405a-b752-6153c5be46c2",
+  "rating": 4,
+  "content": "Ngan qua 123123"
+}
+
+### ==========================================
+### 28. LẤY DANH SÁCH REVIEW (GET /products/:id/reviews)
+### ==========================================
+
+### Test 1: Lấy mặc định (Trang 1, Mới nhất)
+# Thay <PRODUCT_ID> bằng ID sản phẩm đã có review
+GET {{baseUrl}}/products/c2dd3344-ee55-66ff-8899-aabbccddee01/reviews
+
+### Test 2: Lọc chỉ xem 5 sao
+GET {{baseUrl}}/products/c2dd3344-ee55-66ff-8899-aabbccddee01/reviews?star=4
+
+### Test 3: Sắp xếp điểm cao nhất
+GET {{baseUrl}}/products/c2dd3344-ee55-66ff-8899-aabbccddee01/reviews?sort=highest
