@@ -365,6 +365,17 @@ Content-Type: application/json
   "rating": 4,
   "content": "Ngan qua 123123"
 }
+### Case 4: Nội dung Độc hại (Sẽ bị chặn 400)
+# Thử nhập các từ ngữ tiêu cực mà model AI của bạn đã học
+POST {{baseUrl}}/products/c2dd3344-ee55-66ff-8899-aabbccddee01/reviews
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "order_id": "b10f106f-ea66-405a-b752-6153c5be46c2",
+  "rating": 1,
+  "content": "giày đẹp lắm mn"
+}
 
 ### ==========================================
 ### 28. LẤY DANH SÁCH REVIEW (GET /products/:id/reviews)

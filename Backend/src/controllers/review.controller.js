@@ -90,6 +90,9 @@ const getProductReviews = asyncHandler(async (req, res) => {
   });
 });
 
+
+
+const AI_SERVICE_URL = 'http://localhost:8000/predict';
 const submitReview = asyncHandler(async (req, res) => {
   const userId = req.user.user_id;
   const { id } = req.params;
@@ -109,7 +112,7 @@ const submitReview = asyncHandler(async (req, res) => {
     where: {
       order_id: order_id,
       user_id: userId,
-      status: 'completed' // Bắt buộc đơn phải giao thành công
+      status: 'completed'
     },
     include: [
       {
@@ -145,9 +148,33 @@ const submitReview = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'Bạn đã đánh giá sản phẩm này rồi.' });
   }
 
-  // 4. (TẠM BỎ QUA AI FILTER TẠI ĐÂY)
-  // Nếu sau này làm AI, sẽ check content ở bước này.
 
+  try {
+    const aiResponse = await fetch(AI_SERVICE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: content })
+    });
+
+    if (aiResponse.ok) {
+      const aiResult = await aiResponse.json();
+
+      if (aiResult.is_toxic) {
+        return res.status(400).json({
+          error_code: "INAPPROPRIATE_CONTENT",
+          message: aiResult.message || "Nội dung đánh giá chứa từ ngữ không phù hợp. Vui lòng chỉnh sửa lại."
+        });
+      }
+    } else {
+      console.warn("AI Service Warning: Không thể kết nối tới AI Filter (Status khác 200).");
+    }
+  } catch (error) {
+    // Nếu Python Service chưa bật hoặc bị lỗi, ta có 2 lựa chọn:
+    // Option A: Chặn luôn không cho đăng (Fail Closed) -> An toàn tuyệt đối.
+    // Option B: Cho đăng nhưng log warning (Fail Open) -> Trải nghiệm tốt hơn nếu server AI sập.
+    // Ở đây mình chọn Option B (cho phép đăng) để bạn dễ test, nhưng log ra console.
+    console.error("AI Service Error: Server Python có thể chưa bật.", error.message);
+  }
   // 5. TẠO REVIEW
   const newReview = await db.Review.create({
     user_id: userId,
