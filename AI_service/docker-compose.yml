@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  api:
+    container_name: toxic_shoe_api
+    build: .
+    ports:
+      - "8000:8000"  # Map cổng 8000 của máy bạn vào container
+    volumes:
+      - ./src:/app/src      # Map code: Sửa code ở ngoài -> Docker tự cập nhật
+      - ./models:/app/models # Map model: Train xong file .pkl sẽ hiện ra ở máy thật
+      - ./data:/app/data    # Map data: Để code đọc được file csv
+    environment:
+      - PYTHONPATH=/app     # Giúp Python hiểu đường dẫn import
+    command: uvicorn src.server:app --host 0.0.0.0 --port 8000 --reload
+    restart: always
