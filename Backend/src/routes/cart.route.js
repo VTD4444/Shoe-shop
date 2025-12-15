@@ -8,5 +8,6 @@ router.use(authMiddleware);
 
 router.post('/add', cartController.addToCart);
 router.get('/', cartController.getCart);
+router.put('/:id', cartController.updateCartItem);
 
 export default router;

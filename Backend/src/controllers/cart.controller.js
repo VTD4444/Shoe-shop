@@ -46,7 +46,6 @@ const addToCart = asyncHandler(async (req, res) => {
   }
 });
 
-// 18. Xem giỏ hàng (Get Cart)
 const getCart = asyncHandler(async (req, res) => {
   const userId = req.user.user_id;
 
@@ -66,12 +65,12 @@ const getCart = asyncHandler(async (req, res) => {
           {
             model: db.Product,
               as: 'product',
-            attributes: ['name', 'base_price'],
+            attributes: ['name', 'base_price',"product_id"],
             include: [
               {
                 model: db.ProductMedia,
                 as: 'media',
-                // where: { is_thumbnail: true },
+                where: { is_thumbnail: true },
                 attributes: ['url'],
                 required: false,
                 limit: 1
@@ -84,12 +83,12 @@ const getCart = asyncHandler(async (req, res) => {
     order: [['created_at', 'DESC']]
   });
 
+
   let totalPrice = 0;
   let totalItems = 0;
     console.log(JSON.stringify(cartItems, null, 2));
   const formattedItems = cartItems.map(item => {
     if (!item.variant || !item.variant.product) return null;
-
     const variant = item.variant;
     const product = variant.product;
 
@@ -129,7 +128,74 @@ const getCart = asyncHandler(async (req, res) => {
     items: formattedItems
   });
 });
+
+
+const updateCartItem = asyncHandler(async (req, res) => {
+  const userId = req.user.user_id;
+  const { id } = req.params;
+  const { quantity } = req.body;
+
+  const newQty = parseInt(quantity);
+  if (!newQty || newQty <= 0) {
+    return res.status(400).json({ message: 'Số lượng phải lớn hơn 0' });
+  }
+
+  const cartItem = await db.CartItem.findOne({
+    where: {
+      cart_item_id: id,
+      user_id: userId
+    },
+    include: [
+      {
+        model: db.ProductVariant,
+        as: 'variant',
+        include: [{ model: db.Product, as: 'product' }]
+      }
+    ]
+  });
+
+  if (!cartItem) {
+    return res.status(404).json({ message: 'Không tìm thấy sản phẩm trong giỏ hàng' });
+  }
+
+  const variant = cartItem.variant;
+  if (variant.stock_quantity < newQty) {
+    return res.status(400).json({ message: `Kho chỉ còn ${variant.stock_quantity} sản phẩm!` });
+  }
+
+  cartItem.quantity = newQty;
+  await cartItem.save();
+
+  const unitPrice = parseFloat(variant.product.base_price) + (parseFloat(variant.price_modifier) || 0);
+  const newItemTotal = unitPrice * newQty;
+
+  return res.status(200).json({
+    message: 'Cập nhật thành công',
+    item_total: newItemTotal
+  });
+});
+
+const removeCartItem = asyncHandler(async (req, res) => {
+  const userId = req.user.user_id;
+  const { id } = req.params;
+
+  const deletedCount = await db.CartItem.destroy({
+    where: {
+      cart_item_id: id,
+      user_id: userId
+    }
+  });
+
+  if (deletedCount === 0) {
+    return res.status(404).json({ message: 'Không tìm thấy sản phẩm để xóa' });
+  }
+
+  return res.status(200).json({ message: 'Đã xóa sản phẩm khỏi giỏ' });
+});
+
 export default {
   addToCart,
-  getCart
+  getCart,
+  updateCartItem,
+  removeCartItem
 };

@@ -201,8 +201,8 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "variant_id": "d4ee5566-ff77-8899-00aa-bbccddeeff03",
-  "quantity": 1
+  "variant_id": "d4ee5566-ff77-8899-00aa-bbccddeeff01",
+  "quantity": 2
 }
 
 ### ==========================================
@@ -210,3 +210,183 @@ Content-Type: application/json
 ### ==========================================
 GET {{baseUrl}}/cart
 Authorization: Bearer {{token}}
+
+
+
+### ==========================================
+### 19. CẬP NHẬT SỐ LƯỢNG (PUT /cart/:id)
+### ==========================================
+# Thay <CART_ITEM_ID> bằng ID thực tế lấy từ API Get Cart
+PUT {{baseUrl}}/cart/d7d3e6f0-9bd0-479b-9655-3c1f729237c6
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "quantity": 5
+}
+
+### ==========================================
+### 20. XÓA KHỎI GIỎ (DELETE /cart/:id)
+### ==========================================
+DELETE {{baseUrl}}/cart/
+Authorization: Bearer {{token}}
+
+### ==========================================
+### 21. TÍNH TOÁN ĐƠN HÀNG (PREVIEW)
+### ==========================================
+# Cần thay address_id bằng ID thật của bạn trong bảng addresses
+# Nếu chưa có voucher thì xóa dòng voucher_code đi
+
+POST {{baseUrl}}/orders/preview
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "address_id": "87a822e7-4612-4912-8a44-021610aa2765",
+  "voucher_code": "HELLO2025",
+  "shipping_method": "express"
+}
+
+### ==========================================
+### 22. TẠO ĐƠN HÀNG (PLACE ORDER)
+### ==========================================
+# Trường hợp 1: Thanh toán COD
+POST {{baseUrl}}/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "address_id": "87a822e7-4612-4912-8a44-021610aa2765",
+  "payment_method": "COD",
+  "shipping_method": "express",
+  "voucher_code": "HELLO2025",
+  "note": "Giao hang buoi chieu nhe"
+}
+
+### ==========================================
+### TEST ONLINE PAYMENT
+### ==========================================
+# Trường hợp 2: Thanh toán MOMO (Sẽ trả về link)
+POST {{baseUrl}}/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "address_id": "87a822e7-4612-4912-8a44-021610aa2765",
+  "payment_method": "MOMO",
+    "voucher_code": "HELLO2025",
+  "shipping_method": "express"
+}
+
+### ==========================================
+### 23. CẬP NHẬT TRẠNG THÁI "ĐÃ THANH TOÁN"
+### ==========================================
+# Thay <ORDER_ID> bằng ID đơn hàng bạn vừa tạo
+PUT {{baseUrl}}/orders/b10f106f-ea66-405a-b752-6153c5be46c2/pay
+Authorization: Bearer {{token}}
+
+
+### ==========================================
+### 24. LỊCH SỬ ĐƠN HÀNG (HISTORY)
+### ==========================================
+
+### Test 1: Lấy tất cả (Mặc định)
+GET {{baseUrl}}/orders
+Authorization: Bearer {{token}}
+
+### Test 2: Lọc đơn "Chờ xử lý" (pending)
+GET {{baseUrl}}/orders?status=pending
+Authorization: Bearer {{token}}
+
+### Test 3: Lọc đơn "Chưa thanh toán" (unpaid)
+GET {{baseUrl}}/orders?payment_status=unpaid
+Authorization: Bearer {{token}}
+
+### Test 4: Combo lọc (Đã hoàn thành + Đã trả tiền)
+GET {{baseUrl}}/orders?status=completed&payment_status=paid
+Authorization: Bearer {{token}}
+
+
+
+### ==========================================
+### 25. CHI TIẾT ĐƠN HÀNG (DETAIL)
+### ==========================================
+# Thay <ORDER_ID> bằng UUID thực tế
+GET {{baseUrl}}/orders/b10f106f-ea66-405a-b752-6153c5be46c2
+Authorization: Bearer {{token}}
+
+### ==========================================
+### 26. HỦY ĐƠN HÀNG
+### ==========================================
+PUT {{baseUrl}}/orders/b10f106f-ea66-405a-b752-6153c5be46c2/cancel
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "reason": "Tôi muốn đổi sang màu khác"
+}
+
+
+### ==========================================
+### 27. GỬI ĐÁNH GIÁ (SUBMIT REVIEW)
+### ==========================================
+
+### Case 1: Thành công (Đã mua + Đã nhận hàng)
+# Thay <PRODUCT_ID> và <ORDER_ID_COMPLETED>
+POST {{baseUrl}}/products/c2dd3344-ee55-66ff-8899-aabbccddee01/reviews
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "order_id": "b10f106f-ea66-405a-b752-6153c5be46c2",
+  "rating": 5,
+  "content": "Sản phẩm dùng rất tốt, tôi rất hài lòng."
+}
+
+### Case 2: Lỗi chưa mua (Hoặc đơn chưa completed)
+# Thay bằng một order_id đang pending hoặc order_id tào lao
+POST {{baseUrl}}/products/c2dd3344-ee55-66ff-8899-aabbccddee01/reviews
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "order_id": "b10f106f-ea66-405a-b752-6153c5be46c2",
+  "rating": 5,
+  "content": "Chưa nhận hàng mà đòi đánh giá."
+}
+
+### Case 3: Lỗi nội dung ngắn
+POST {{baseUrl}}/products/c2dd3344-ee55-66ff-8899-aabbccddee01/reviews
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "order_id": "b10f106f-ea66-405a-b752-6153c5be46c2",
+  "rating": 4,
+  "content": "Ngan qua 123123"
+}
+### Case 4: Nội dung Độc hại (Sẽ bị chặn 400)
+# Thử nhập các từ ngữ tiêu cực mà model AI của bạn đã học
+POST {{baseUrl}}/products/c2dd3344-ee55-66ff-8899-aabbccddee01/reviews
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "order_id": "b10f106f-ea66-405a-b752-6153c5be46c2",
+  "rating": 1,
+  "content": "giày đẹp lắm mn"
+}
+
+### ==========================================
+### 28. LẤY DANH SÁCH REVIEW (GET /products/:id/reviews)
+### ==========================================
+
+### Test 1: Lấy mặc định (Trang 1, Mới nhất)
+# Thay <PRODUCT_ID> bằng ID sản phẩm đã có review
+GET {{baseUrl}}/products/c2dd3344-ee55-66ff-8899-aabbccddee01/reviews
+
+### Test 2: Lọc chỉ xem 5 sao
+GET {{baseUrl}}/products/c2dd3344-ee55-66ff-8899-aabbccddee01/reviews?star=4
+
+### Test 3: Sắp xếp điểm cao nhất
+GET {{baseUrl}}/products/c2dd3344-ee55-66ff-8899-aabbccddee01/reviews?sort=highest

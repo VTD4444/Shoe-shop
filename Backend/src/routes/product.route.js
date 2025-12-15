@@ -1,10 +1,18 @@
 import express from 'express';
 import productController from '../controllers/product.controller.js';
+import reviewController from '../controllers/review.controller.js';
+import authMiddleware from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 router.get("/filters",productController.getFilterMetadata)
-
 router.get("/trending",productController.getTrendingProducts)
 router.post('/search', productController.searchProducts);
+router.get('/:id/reviews', reviewController.getProductReviews);
 router.get('/:id', productController.getProductDetail);
+
+router.post(
+  '/:id/reviews',
+  authMiddleware,
+  reviewController.submitReview
+);
 export default router;

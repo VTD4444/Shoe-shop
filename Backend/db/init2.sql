@@ -84,3 +84,6 @@ VALUES (
     'image',
     true
 );
+
+INSERT INTO vouchers (code, discount_type, discount_value, min_order_value, valid_from, valid_to, usage_limit, is_active,created_at)
+VALUES ('HELLO2025', 'fixed', 50000, 100000, NOW(), '2025-12-31', 100, true,now());
