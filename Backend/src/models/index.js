@@ -12,6 +12,7 @@ import VoucherModel from './voucher.model.js';
 import CartItemModel from './cart_item.model.js';
 import OrderModel from './order.model.js';
 import OrderItemModel from './order_item.model.js';
+import ReviewModel from "./review.model.js";
 const db = {};
 db.Sequelize=Sequelize;
 db.sequelize = sequelize;
@@ -27,7 +28,7 @@ db.Voucher = VoucherModel(sequelize, DataTypes);
 db.CartItem = CartItemModel(sequelize, DataTypes);
 db.Order = OrderModel(sequelize, DataTypes);
 db.OrderItem = OrderItemModel(sequelize, DataTypes);
-
+db.Review = ReviewModel(sequelize, DataTypes);
 // --- User & Address ---
 db.User.hasMany(db.Address, { foreignKey: 'user_id', as: 'addresses' });
 db.Address.belongsTo(db.User, { foreignKey: 'user_id', as: 'user' });
@@ -67,10 +68,20 @@ db.Order.belongsTo(db.User, { foreignKey: 'user_id', as: 'user' });
 db.Order.hasMany(db.OrderItem, { foreignKey: 'order_id', as: 'items' });
 db.OrderItem.belongsTo(db.Order, { foreignKey: 'order_id' });
 
+db.Voucher.hasMany(db.Order, { foreignKey: 'voucher_id' });
+db.Order.belongsTo(db.Voucher, { foreignKey: 'voucher_id', as: 'voucher' });
+
 db.ProductVariant.hasMany(db.OrderItem, { foreignKey: 'variant_id' });
 db.OrderItem.belongsTo(db.ProductVariant, { foreignKey: 'variant_id', as: 'variant' });
 
+db.User.hasMany(db.Review, { foreignKey: 'user_id', as: 'reviews' });
+db.Review.belongsTo(db.User, { foreignKey: 'user_id', as: 'user' });
 
+db.Product.hasMany(db.Review, { foreignKey: 'product_id', as: 'reviews' });
+db.Review.belongsTo(db.Product, { foreignKey: 'product_id', as: 'product' });
+
+db.ProductVariant.hasMany(db.Review, { foreignKey: 'variant_id' });
+db.Review.belongsTo(db.ProductVariant, { foreignKey: 'variant_id', as: 'variant' });
 
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {

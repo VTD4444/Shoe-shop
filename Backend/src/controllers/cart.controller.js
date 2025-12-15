@@ -46,7 +46,6 @@ const addToCart = asyncHandler(async (req, res) => {
   }
 });
 
-// 18. Xem giỏ hàng (Get Cart)
 const getCart = asyncHandler(async (req, res) => {
   const userId = req.user.user_id;
 
@@ -131,10 +130,9 @@ const getCart = asyncHandler(async (req, res) => {
 });
 
 
-// 19. Cập nhật số lượng (PUT /cart/:id)
 const updateCartItem = asyncHandler(async (req, res) => {
   const userId = req.user.user_id;
-  const { id } = req.params; // Lấy cart_item_id từ URL
+  const { id } = req.params;
   const { quantity } = req.body;
 
   const newQty = parseInt(quantity);
@@ -142,11 +140,10 @@ const updateCartItem = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'Số lượng phải lớn hơn 0' });
   }
 
-  // 1. Tìm Cart Item (kèm thông tin Variant + Product để tính tiền và check kho)
   const cartItem = await db.CartItem.findOne({
     where: {
       cart_item_id: id,
-      user_id: userId // Quan trọng: Chỉ sửa được giỏ hàng của chính mình
+      user_id: userId
     },
     include: [
       {
@@ -161,17 +158,14 @@ const updateCartItem = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: 'Không tìm thấy sản phẩm trong giỏ hàng' });
   }
 
-  // 2. Kiểm tra tồn kho
   const variant = cartItem.variant;
   if (variant.stock_quantity < newQty) {
     return res.status(400).json({ message: `Kho chỉ còn ${variant.stock_quantity} sản phẩm!` });
   }
 
-  // 3. Cập nhật số lượng
   cartItem.quantity = newQty;
   await cartItem.save();
 
-  // 4. Tính toán thành tiền mới của item này (Item Total)
   const unitPrice = parseFloat(variant.product.base_price) + (parseFloat(variant.price_modifier) || 0);
   const newItemTotal = unitPrice * newQty;
 
@@ -181,8 +175,27 @@ const updateCartItem = asyncHandler(async (req, res) => {
   });
 });
 
+const removeCartItem = asyncHandler(async (req, res) => {
+  const userId = req.user.user_id;
+  const { id } = req.params;
+
+  const deletedCount = await db.CartItem.destroy({
+    where: {
+      cart_item_id: id,
+      user_id: userId
+    }
+  });
+
+  if (deletedCount === 0) {
+    return res.status(404).json({ message: 'Không tìm thấy sản phẩm để xóa' });
+  }
+
+  return res.status(200).json({ message: 'Đã xóa sản phẩm khỏi giỏ' });
+});
+
 export default {
   addToCart,
   getCart,
-    updateCartItem,
+  updateCartItem,
+  removeCartItem
 };

@@ -8,7 +8,7 @@ export default (sequelize, DataTypes) => {
     status: { type: DataTypes.STRING, defaultValue: 'pending' },
     total_amount: { type: DataTypes.DECIMAL(15, 2), allowNull: false },
     payment_method: { type: DataTypes.STRING },
-
+    payment_status: { type: DataTypes.STRING, defaultValue: 'unpaid' },
     shipping_method: { type: DataTypes.STRING },
 
     shipping_fee: { type: DataTypes.DECIMAL(15, 2), defaultValue: 0 },
