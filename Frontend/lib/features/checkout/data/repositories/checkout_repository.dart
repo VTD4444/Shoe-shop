@@ -59,18 +59,31 @@ class CheckoutRepository {
     }
   }
 
-  // (Tạm thời) Mock function lấy list địa chỉ
-  // Trong thực tế bạn cần API GET /user/addresses
+  // 3. Lấy danh sách địa chỉ THẬT từ API
   Future<List<ShippingAddress>> getMyAddresses() async {
-    // TODO: Gọi API thật
-    // Ở đây mình fake tạm 1 địa chỉ để test flow
-    return [
-      ShippingAddress(
-        addressId: "fake-address-id-123", // ID giả định
-        recipientName: "Nguyen Van A",
-        phone: "0988777666",
-        fullAddress: "123 Hoan Kiem, Ha Noi",
-      ),
-    ];
+    try {
+      final response = await _dioClient.dio.get('/addresses');
+
+      // API trả về cấu trúc: { "message": "...", "data": [...] }
+      // Cần lấy list từ key ['data']
+      final List data = response.data['data'] ?? [];
+
+      return data.map((json) {
+        // Map dữ liệu từ API sang ShippingAddress model dùng cho Checkout
+        return ShippingAddress(
+          // Kiểm tra kỹ key ID backend trả về là 'address_id' hay 'id'
+          addressId: json['address_id'] ?? json['id'] ?? '',
+          recipientName: json['recipient_name'] ?? '',
+          phone: json['phone'] ?? '',
+          // Tự ghép chuỗi địa chỉ hiển thị: Phường, Quận, Thành phố
+          fullAddress: "${json['ward']}, ${json['district']}, ${json['city']}",
+        );
+      }).toList();
+    } catch (e) {
+      // In lỗi ra console để debug nếu cần
+      print("Error fetching addresses for checkout: $e");
+      // Trả về list rỗng thay vì throw exception để Bloc xử lý logic "Vui lòng thêm địa chỉ"
+      return [];
+    }
   }
 }

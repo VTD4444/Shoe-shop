@@ -23,6 +23,11 @@ class PlaceOrderEvent extends CheckoutEvent {
   PlaceOrderEvent({required this.paymentMethod, this.note});
 }
 
+class ChangeAddressEvent extends CheckoutEvent {
+  final String addressId;
+  ChangeAddressEvent(this.addressId);
+}
+
 // STATES
 abstract class CheckoutState {}
 
@@ -163,6 +168,48 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
             note: event.note,
           );
           emit(CheckoutOrderSuccess(orderId));
+        } catch (e) {
+          emit(CheckoutFailure(e.toString()));
+        }
+      }
+    });
+
+    // Xử lý sự kiện thay đổi địa chỉ
+    on<ChangeAddressEvent>((event, emit) async {
+      if (state is CheckoutLoaded) {
+        final currState = state as CheckoutLoaded;
+
+        // Chuyển sang Loading để user biết đang tính toán lại
+        emit(CheckoutLoading());
+
+        try {
+          // Gọi API Preview với Address ID MỚI
+          final newPreview = await repository.previewOrder(
+            addressId: event.addressId, // <--- ID mới từ sổ địa chỉ
+            shippingMethod: currState.selectedShippingMethod,
+            voucherCode: currState.voucherCode,
+          );
+
+          // Cập nhật State với dữ liệu giá mới và Address ID mới
+          emit(
+            currState.copyWith(
+              preview: newPreview,
+              // Lưu ý: Trong CheckoutLoaded bạn cần đảm bảo có trường selectedAddressId
+              // Nếu chưa có trong copyWith, hãy thêm nó vào (xem lại file bloc bước trước)
+            ),
+          );
+
+          // *Lưu ý nâng cao*: Nếu class CheckoutLoaded chưa hỗ trợ update selectedAddressId trong copyWith
+          // Bạn hãy tạo mới object CheckoutLoaded như sau:
+          /*
+          emit(CheckoutLoaded(
+            preview: newPreview,
+            addresses: currState.addresses,
+            selectedAddressId: event.addressId, // Cập nhật ID
+            selectedShippingMethod: currState.selectedShippingMethod,
+            voucherCode: currState.voucherCode,
+          ));
+          */
         } catch (e) {
           emit(CheckoutFailure(e.toString()));
         }

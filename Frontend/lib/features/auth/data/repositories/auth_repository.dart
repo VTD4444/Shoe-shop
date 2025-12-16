@@ -82,4 +82,58 @@ class AuthRepository {
   Future<void> logout() async {
     await _storageHelper.clearAll();
   }
+
+  // 4. Lấy thông tin Profile mới nhất
+  Future<UserModel> getProfile() async {
+    try {
+      final response = await _dioClient.dio.get('/users/profile');
+      return UserModel.fromJson(response.data);
+    } catch (e) {
+      throw Exception('Load profile failed');
+    }
+  }
+
+  // 5. Cập nhật Profile
+  Future<UserModel> updateProfile({
+    String? fullName,
+    String? phoneNumber,
+    String? gender,
+    String? birthDate,
+  }) async {
+    try {
+      final response = await _dioClient.dio.put(
+        '/users/profile',
+        data: {
+          if (fullName != null) 'full_name': fullName,
+          if (phoneNumber != null) 'phone_number': phoneNumber,
+          if (gender != null) 'gender': gender,
+          if (birthDate != null) 'birth_date': birthDate,
+        },
+      );
+      // API trả về key "user" chứa thông tin mới
+      return UserModel.fromJson(response.data['user']);
+    } catch (e) {
+      throw Exception('Update profile failed');
+    }
+  }
+
+  // 6. Đổi mật khẩu
+  Future<void> changePassword(
+    String currentPass,
+    String newPass,
+    String confirmPass,
+  ) async {
+    try {
+      await _dioClient.dio.put(
+        '/users/change-password',
+        data: {
+          'current_password': currentPass,
+          'new_password': newPass,
+          'confirm_password': confirmPass,
+        },
+      );
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Change password failed');
+    }
+  }
 }

@@ -8,6 +8,7 @@ import '../../product/logic/product_detail_bloc.dart'; // Bloc chi tiết
 import '../../discovery/data/repositories/product_repository.dart'; // Để lấy repo
 import '../../cart/logic/cart_bloc.dart'; // Để lắng nghe state giỏ hàng
 import '../../cart/presentation/cart_screen.dart'; // Để chuyển trang
+import '../../auth/presentation/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -132,7 +133,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // --- WIDGETS CON ---
-
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
@@ -148,7 +148,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       actions: [
-        // --- BADGE CART LOGIC ---
+        // --- 1. Search Icon (Giữ nguyên) ---
+        IconButton(
+          icon: const Icon(Icons.search, color: Colors.black),
+          onPressed: () {},
+        ),
+
+        // --- 2. Cart Icon (Giữ nguyên) ---
         BlocBuilder<CartBloc, CartState>(
           builder: (context, state) {
             int cartCount = 0;
@@ -199,6 +205,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
               ],
+            );
+          },
+        ),
+
+        // --- 3. THÊM PROFILE ICON Ở ĐÂY ---
+        IconButton(
+          icon: const Icon(Icons.person_outline, color: Colors.black),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ProfileScreen()),
             );
           },
         ),

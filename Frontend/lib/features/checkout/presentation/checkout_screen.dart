@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:shoe_shop/features/cart/logic/cart_bloc.dart';
+
+// --- IMPORTS CỦA CHECKOUT ---
 import '../data/repositories/checkout_repository.dart';
 import '../logic/checkout_bloc.dart';
+import 'order_success_screen.dart';
 
-// Màn hình này cần nhận Repository từ main hoặc context
+// --- IMPORTS CỦA ADDRESS (Để chọn địa chỉ) ---
+import '../../address/presentation/address_list_screen.dart';
+import '../../address/data/models/address_model.dart';
+
 class CheckoutScreen extends StatelessWidget {
   const CheckoutScreen({super.key});
 
@@ -58,23 +65,12 @@ class _CheckoutViewState extends State<CheckoutView> {
               ),
             );
           } else if (state is CheckoutOrderSuccess) {
-            // TODO: Chuyển sang màn hình Success
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (_) => AlertDialog(
-                title: const Text("Order Placed!"),
-                content: Text("Order ID: ${state.orderId}"),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context); // Close dialog
-                      Navigator.pop(context); // Close checkout
-                      Navigator.pop(context); // Close cart (Back to Home)
-                    },
-                    child: const Text("OK"),
-                  ),
-                ],
+            context.read<CartBloc>().add(LoadCartEvent());
+            // Chuyển hướng sang màn hình Success
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => OrderSuccessScreen(orderId: state.orderId),
               ),
             );
           }
@@ -94,35 +90,91 @@ class _CheckoutViewState extends State<CheckoutView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 1. SHIPPING ADDRESS
+                  // 1. SHIPPING ADDRESS (Đã nâng cấp Click action)
                   _buildSectionTitle("SHIPPING ADDRESS"),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: address == null
-                        ? const Text("Please add address")
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                address.recipientName,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                  GestureDetector(
+                    onTap: () async {
+                      // Mở màn hình danh sách địa chỉ để chọn
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              const AddressListScreen(isSelectionMode: true),
+                        ),
+                      );
+
+                      // Nếu người dùng chọn 1 địa chỉ và quay lại
+                      if (result != null && result is AddressModel) {
+                        if (context.mounted) {
+                          context.read<CheckoutBloc>().add(
+                            ChangeAddressEvent(result.id),
+                          );
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                "Selected: ${result.recipientName}. Updating price...",
                               ),
-                              const SizedBox(height: 4),
-                              Text(address.phone),
-                              const SizedBox(height: 4),
-                              Text(
-                                address.fullAddress,
-                                style: TextStyle(color: Colors.grey[600]),
-                              ),
-                            ],
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: address == null
+                            ? Border.all(color: Colors.red.shade200)
+                            : null,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: address == null
+                                ? const Text(
+                                    "Please select a shipping address",
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  )
+                                : Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        address.recipientName,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(address.phone),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        address.fullAddress,
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
                           ),
+                          const SizedBox(width: 8),
+                          const Icon(
+                            Icons.arrow_forward_ios,
+                            size: 16,
+                            color: Colors.grey,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 24),
 
@@ -295,6 +347,9 @@ class _CheckoutViewState extends State<CheckoutView> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                       child: const Text(
                         "PLACE ORDER",

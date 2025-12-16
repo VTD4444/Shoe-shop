@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shoe_shop/features/address/data/repositories/address_repository.dart';
+import 'package:shoe_shop/features/address/logic/address_bloc.dart';
 import 'package:shoe_shop/features/checkout/data/repositories/checkout_repository.dart';
+import 'package:shoe_shop/features/checkout/logic/checkout_bloc.dart';
 import 'core/api/dio_client.dart';
 import 'core/storage/storage_helper.dart';
 import 'features/auth/data/repositories/auth_repository.dart';
@@ -29,6 +32,7 @@ void main() {
   final productRepository = ProductRepository(dioClient: dioClient);
   final cartRepository = CartRepository(dioClient: dioClient);
   final checkoutRepository = CheckoutRepository(dioClient: dioClient);
+  final addressRepository = AddressRepository(dioClient: dioClient);
 
   runApp(
     MyApp(
@@ -36,6 +40,7 @@ void main() {
       productRepository: productRepository,
       cartRepository: cartRepository,
       checkoutRepository: checkoutRepository,
+      addressRepository: addressRepository,
     ),
   );
 }
@@ -45,6 +50,7 @@ class MyApp extends StatelessWidget {
   final ProductRepository productRepository;
   final CartRepository cartRepository;
   final CheckoutRepository checkoutRepository;
+  final AddressRepository addressRepository;
 
   const MyApp({
     super.key,
@@ -52,6 +58,7 @@ class MyApp extends StatelessWidget {
     required this.productRepository,
     required this.cartRepository,
     required this.checkoutRepository,
+    required this.addressRepository,
   });
 
   @override
@@ -63,6 +70,7 @@ class MyApp extends StatelessWidget {
         RepositoryProvider.value(value: productRepository),
         RepositoryProvider.value(value: cartRepository),
         RepositoryProvider.value(value: checkoutRepository),
+        RepositoryProvider.value(value: addressRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -73,6 +81,15 @@ class MyApp extends StatelessWidget {
           BlocProvider(create: (context) => HomeBloc(productRepository)),
           BlocProvider(
             create: (context) => CartBloc(cartRepository)..add(LoadCartEvent()),
+          ),
+          BlocProvider(
+            create: (context) =>
+                // CheckoutBloc(checkoutRepository), // Tạo khi dùng
+                CheckoutBloc(checkoutRepository),
+          ),
+          BlocProvider(
+            create: (context) =>
+                AddressBloc(addressRepository)..add(LoadAddressesEvent()),
           ),
         ],
         child: MaterialApp(
