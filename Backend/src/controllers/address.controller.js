@@ -64,7 +64,7 @@ const deleteAddress = asyncHandler(async (req, res) => {
   if(address.is_default == true){
       return res.status(400).json({ message: 'Cần 1 địa chỉ làm mặc định' });
   }
-    // await address.destroy();
+    await address.destroy();
   return res.status(200).json({ message: 'Đã xóa địa chỉ' });
 });
 
@@ -87,12 +87,12 @@ const updateAddress = asyncHandler(async (req, res) => {
         message: 'Phải có ít nhất một địa chỉ mặc định'
       });
     }
-  if (is_default === true) {
-    await db.Address.update(
-      { is_default: false },
-      { where: { user_id: user_id  } }
-    );
-  }
+    if (is_default === true && !address.is_default) {
+        await db.Address.update(
+          { is_default: false },
+          { where: { user_id: user_id } }
+        );
+      }
 
   await address.update(req.body);
 
