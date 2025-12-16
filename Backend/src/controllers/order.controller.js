@@ -247,20 +247,22 @@ const createOrder = asyncHandler(async (req, res) => {
     return newOrder;
   });
 
-
-
-  let paymentUrl = null;
   let message = "Đặt hàng thành công";
+  const orderId = result.order_id; 
+  
+  // ✅ KHUYẾN NGHỊ: Dùng finalTotal đã tính toán ở trên thay vì req.body.total_amount để bảo mật
+  const amount = finalTotal; 
 
-  // Nếu chọn thanh toán Online -> Tạo link giả lập
-  if (['MOMO', 'VNPAY', 'ZALOPAY', 'BANKING'].includes(payment_method?.toUpperCase())) {
-    paymentUrl = `https://fake-payment-gateway.com/pay?order_id=${result.order_id}&amount=${result.total_amount}`;
-    message = "Vui lòng thanh toán để hoàn tất đơn hàng";
-  }
+  // CẤU HÌNH TÀI KHOẢN NGÂN HÀNG CỦA BẠN
+  const myBank = "MB"; 
+  const myTk = "0961115529"; 
+
+  // Tạo link ảnh QR
+  const paymentUrl = `https://qr.sepay.vn/img?bank=${myBank}&acc=${myTk}&template=compact&amount=${amount}&des=${orderId}`;
 
   return res.status(201).json({
     message: message,
-    order_id: result.order_id,
+    order_id: result.order_id, // Ở đây bạn đã dùng đúng result
     status: result.status,
     payment_status: result.payment_status,
     payment_url: paymentUrl
