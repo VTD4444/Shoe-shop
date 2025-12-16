@@ -32,7 +32,7 @@ class CheckoutRepository {
   }
 
   // 2. Đặt hàng
-  Future<String> placeOrder({
+  Future<Map<String, dynamic>> placeOrder({
     required String addressId,
     required String paymentMethod,
     required String shippingMethod,
@@ -50,8 +50,12 @@ class CheckoutRepository {
           'note': note,
         },
       );
-      // Trả về Order ID để sau này chuyển sang trang Success
-      return response.data['order_id'];
+
+      return {
+        'order_id': response.data['order_id'],
+        // Backend trả về payment_url nếu chọn Momo/Online
+        'payment_url': response.data['payment_url'],
+      };
     } catch (e) {
       throw Exception(
         e is DioException ? e.response?.data['message'] : 'Order failed',
@@ -84,6 +88,17 @@ class CheckoutRepository {
       print("Error fetching addresses for checkout: $e");
       // Trả về list rỗng thay vì throw exception để Bloc xử lý logic "Vui lòng thêm địa chỉ"
       return [];
+    }
+  }
+
+  // Kiểm tra trạng thái đơn hàng (Dùng để polling)
+  Future<String> getOrderStatus(String orderId) async {
+    try {
+      final response = await _dioClient.dio.get('/orders/$orderId');
+      // Giả sử API trả về: { "order_id": "...", "payment_status": "paid", ... }
+      return response.data['payment_status'] ?? 'unpaid';
+    } catch (e) {
+      return 'unpaid'; // Mặc định nếu lỗi thì coi như chưa trả
     }
   }
 }

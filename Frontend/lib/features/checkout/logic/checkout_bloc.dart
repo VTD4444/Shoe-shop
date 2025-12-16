@@ -72,7 +72,9 @@ class CheckoutLoaded extends CheckoutState {
 
 class CheckoutOrderSuccess extends CheckoutState {
   final String orderId;
-  CheckoutOrderSuccess(this.orderId);
+  final String? paymentUrl;
+
+  CheckoutOrderSuccess({required this.orderId, this.paymentUrl});
 }
 
 // BLOC
@@ -160,14 +162,21 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
         final currState = state as CheckoutLoaded;
         emit(CheckoutLoading());
         try {
-          final orderId = await repository.placeOrder(
+          // Nhận Map kết quả từ Repo
+          final result = await repository.placeOrder(
             addressId: currState.selectedAddressId,
             paymentMethod: event.paymentMethod,
             shippingMethod: currState.selectedShippingMethod,
             voucherCode: currState.voucherCode,
             note: event.note,
           );
-          emit(CheckoutOrderSuccess(orderId));
+
+          emit(
+            CheckoutOrderSuccess(
+              orderId: result['order_id'],
+              paymentUrl: result['payment_url'], // Truyền URL sang State
+            ),
+          );
         } catch (e) {
           emit(CheckoutFailure(e.toString()));
         }

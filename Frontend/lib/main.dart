@@ -4,6 +4,7 @@ import 'package:shoe_shop/features/address/data/repositories/address_repository.
 import 'package:shoe_shop/features/address/logic/address_bloc.dart';
 import 'package:shoe_shop/features/checkout/data/repositories/checkout_repository.dart';
 import 'package:shoe_shop/features/checkout/logic/checkout_bloc.dart';
+import 'package:shoe_shop/features/order/data/repositories/order_repository.dart';
 import 'core/api/dio_client.dart';
 import 'core/storage/storage_helper.dart';
 import 'features/auth/data/repositories/auth_repository.dart';
@@ -33,6 +34,7 @@ void main() {
   final cartRepository = CartRepository(dioClient: dioClient);
   final checkoutRepository = CheckoutRepository(dioClient: dioClient);
   final addressRepository = AddressRepository(dioClient: dioClient);
+  final orderRepository = OrderRepository(dioClient: dioClient);
 
   runApp(
     MyApp(
@@ -41,6 +43,7 @@ void main() {
       cartRepository: cartRepository,
       checkoutRepository: checkoutRepository,
       addressRepository: addressRepository,
+      orderRepository: orderRepository,
     ),
   );
 }
@@ -51,6 +54,7 @@ class MyApp extends StatelessWidget {
   final CartRepository cartRepository;
   final CheckoutRepository checkoutRepository;
   final AddressRepository addressRepository;
+  final OrderRepository orderRepository;
 
   const MyApp({
     super.key,
@@ -59,6 +63,7 @@ class MyApp extends StatelessWidget {
     required this.cartRepository,
     required this.checkoutRepository,
     required this.addressRepository,
+    required this.orderRepository,
   });
 
   @override
@@ -71,6 +76,7 @@ class MyApp extends StatelessWidget {
         RepositoryProvider.value(value: cartRepository),
         RepositoryProvider.value(value: checkoutRepository),
         RepositoryProvider.value(value: addressRepository),
+        RepositoryProvider.value(value: orderRepository),
       ],
       child: MultiBlocProvider(
         providers: [

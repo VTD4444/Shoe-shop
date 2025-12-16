@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:shoe_shop/features/cart/logic/cart_bloc.dart';
+import 'package:shoe_shop/features/checkout/presentation/sepay_payment_screen.dart';
 
 // --- IMPORTS CỦA CHECKOUT ---
 import '../data/repositories/checkout_repository.dart';
@@ -65,14 +66,36 @@ class _CheckoutViewState extends State<CheckoutView> {
               ),
             );
           } else if (state is CheckoutOrderSuccess) {
+            // 1. Cập nhật giỏ hàng (Fix vấn đề 1)
             context.read<CartBloc>().add(LoadCartEvent());
-            // Chuyển hướng sang màn hình Success
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => OrderSuccessScreen(orderId: state.orderId),
-              ),
-            );
+
+            // 2. Điều hướng dựa trên việc có Link thanh toán hay không
+            if (state.paymentUrl != null && state.paymentUrl!.isNotEmpty) {
+              // Lấy preview từ state trước đó (CheckoutLoaded)
+              final checkoutLoadedState = context.read<CheckoutBloc>().state;
+              double? amount;
+              if (checkoutLoadedState is CheckoutLoaded) {
+                amount = checkoutLoadedState.preview.finalTotal;
+              }
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => SePayPaymentScreen(
+                    orderId: state.orderId,
+                    paymentUrl: state.paymentUrl!,
+                    amount: amount ?? 0,
+                  ),
+                ),
+              );
+            } else {
+              // B. Nếu không có Link (COD) -> Sang màn hình Success luôn
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => OrderSuccessScreen(orderId: state.orderId),
+                ),
+              );
+            }
           }
         },
         builder: (context, state) {
@@ -287,7 +310,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                         RadioListTile(
                           value: 'MOMO',
                           groupValue: _selectedPayment,
-                          title: const Text("Momo Wallet"),
+                          title: const Text("QR Payment"),
                           activeColor: Colors.black,
                           onChanged: (v) =>
                               setState(() => _selectedPayment = v.toString()),
