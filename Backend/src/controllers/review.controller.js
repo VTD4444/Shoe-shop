@@ -1,10 +1,7 @@
 import db from '../models/index.js';
 import asyncHandler from '../utils/asyncHandler.js';
-import { Sequelize } from 'sequelize'; // 👈 Import thêm để dùng hàm đếm (COUNT)
+import { Sequelize } from 'sequelize';
 
-// ... (Hàm addReview cũ giữ nguyên)
-
-// 28. Lấy danh sách đánh giá (Get Reviews by Product ID)
 const getProductReviews = asyncHandler(async (req, res) => {
   const { id } = req.params; // Lấy product_id từ URL
   const { page = 1, limit = 10, star, sort } = req.query;
@@ -106,8 +103,6 @@ const submitReview = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'Nội dung đánh giá quá ngắn (tối thiểu 10 ký tự).' });
   }
 
-  // 2. VERIFIED PURCHASE CHECK (Quan trọng)
-  // Tìm đơn hàng theo đúng order_id user gửi lên
   const order = await db.Order.findOne({
     where: {
       order_id: order_id,
@@ -169,10 +164,6 @@ const submitReview = asyncHandler(async (req, res) => {
       console.warn("AI Service Warning: Không thể kết nối tới AI Filter (Status khác 200).");
     }
   } catch (error) {
-    // Nếu Python Service chưa bật hoặc bị lỗi, ta có 2 lựa chọn:
-    // Option A: Chặn luôn không cho đăng (Fail Closed) -> An toàn tuyệt đối.
-    // Option B: Cho đăng nhưng log warning (Fail Open) -> Trải nghiệm tốt hơn nếu server AI sập.
-    // Ở đây mình chọn Option B (cho phép đăng) để bạn dễ test, nhưng log ra console.
     console.error("AI Service Error: Server Python có thể chưa bật.", error.message);
   }
   // 5. TẠO REVIEW

@@ -545,6 +545,8 @@ const getOrderDetail = asyncHandler(async (req, res) => {
     return {
       item_id: item.item_id,
       product_name: item.variant?.product?.name || "Sản phẩm không tồn tại",
+        product_id: item.variant?.product?.product_id,
+      variant_id: item.variant?.variant_id,
       quantity: item.quantity,
       price_at_purchase: parseFloat(item.price_at_purchase),
       total_item_price: itemTotal,
