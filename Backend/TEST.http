@@ -228,7 +228,7 @@ Content-Type: application/json
 ### ==========================================
 ### 20. XÓA KHỎI GIỎ (DELETE /cart/:id)
 ### ==========================================
-DELETE {{baseUrl}}/cart/
+DELETE {{baseUrl}}/cart/41104049-f508-4763-a48f-7336c33e2bf3
 Authorization: Bearer {{token}}
 
 ### ==========================================
