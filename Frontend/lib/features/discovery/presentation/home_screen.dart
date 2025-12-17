@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:shoe_shop/core/utils/auth_guard.dart';
+import 'package:shoe_shop/features/discovery/presentation/search_screen.dart';
 import '../data/models/product_model.dart';
 import '../logic/home_bloc.dart';
 import '../../product/presentation/product_detail_screen.dart'; // Màn hình chi tiết
@@ -151,7 +153,12 @@ class _HomeScreenState extends State<HomeScreen> {
         // --- 1. Search Icon (Giữ nguyên) ---
         IconButton(
           icon: const Icon(Icons.search, color: Colors.black),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SearchScreen()),
+            );
+          },
         ),
 
         // --- 2. Cart Icon (Giữ nguyên) ---
@@ -171,11 +178,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Colors.black,
                   ),
                   onPressed: () {
-                    // MỞ CART SCREEN
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const CartScreen()),
-                    );
+                    AuthGuard.checkAuthOrLogin(context, () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const CartScreen()),
+                      );
+                    });
                   },
                 ),
                 // Chỉ hiện Badge khi số lượng > 0
@@ -230,7 +238,14 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: GestureDetector(
         onTap: () {
-          // TODO: Navigate to Master Search Page
+          // --- NAVIGATION ---
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              // Không truyền keyword để vào ô trống
+              builder: (_) => const SearchScreen(),
+            ),
+          );
         },
         child: Container(
           height: 50,

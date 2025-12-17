@@ -20,3 +20,10 @@ class AuthFailure extends AuthState {
   final String message;
   AuthFailure(this.message);
 }
+
+class AuthAuthenticated extends AuthState {
+  final UserModel user;
+  AuthAuthenticated(this.user);
+}
+
+class AuthUnauthenticated extends AuthState {}

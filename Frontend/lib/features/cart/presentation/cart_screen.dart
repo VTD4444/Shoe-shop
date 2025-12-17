@@ -26,7 +26,17 @@ class CartScreen extends StatelessWidget {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
-      body: BlocBuilder<CartBloc, CartState>(
+      body: BlocConsumer<CartBloc, CartState>(
+        listener: (context, state) {
+          if (state is CartError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
         builder: (context, state) {
           if (state is CartLoading) {
             return const Center(
@@ -128,14 +138,27 @@ class CartScreen extends StatelessWidget {
                                     ),
                                   ),
                                   InkWell(
-                                    onTap: item.quantity < item.maxStock
-                                        ? () => context.read<CartBloc>().add(
-                                            UpdateCartItemEvent(
-                                              item.cartItemId,
-                                              item.quantity + 1,
+                                    onTap: () {
+                                      if (item.quantity < item.maxStock) {
+                                        context.read<CartBloc>().add(
+                                          UpdateCartItemEvent(
+                                            item.cartItemId,
+                                            item.quantity + 1,
+                                          ),
+                                        );
+                                      } else {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Đã đạt số lượng tối đa trong kho!',
                                             ),
-                                          )
-                                        : null,
+                                            backgroundColor: Colors.orange,
+                                          ),
+                                        );
+                                      }
+                                    },
                                     child: const Padding(
                                       padding: EdgeInsets.all(4),
                                       child: Icon(Icons.add, size: 16),

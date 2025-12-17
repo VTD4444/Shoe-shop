@@ -271,7 +271,10 @@ class _CheckoutViewState extends State<CheckoutView> {
                           backgroundColor: Colors.black,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
-                        child: const Text("APPLY"),
+                        child: const Text(
+                          "APPLY",
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                     ],
                   ),
@@ -379,6 +382,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
+                          color: Colors.white,
                         ),
                       ),
                     ),

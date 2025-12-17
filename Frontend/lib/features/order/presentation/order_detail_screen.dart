@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:shoe_shop/features/product/data/repositories/review_repository.dart';
+import 'package:shoe_shop/features/product/presentation/write_review_screen.dart';
+
+// Import Repo và Model
 import '../data/repositories/order_repository.dart';
 import '../logic/order_detail_bloc.dart';
 import '../data/models/order_model.dart';
@@ -12,6 +16,7 @@ class OrderDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Inject Bloc và lấy Repository có sẵn từ context (được tạo ở main.dart)
     return BlocProvider(
       create: (context) =>
           OrderDetailBloc(context.read<OrderRepository>())
@@ -47,7 +52,6 @@ class OrderDetailView extends StatelessWidget {
               ),
             );
           } else if (state is OrderDetailError) {
-            // Nếu lỗi là do hủy thất bại, cũng hiện lên
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
@@ -73,10 +77,11 @@ class OrderDetailView extends StatelessWidget {
 
   Widget _buildContent(BuildContext context, OrderModel order) {
     final currencyFormat = NumberFormat.simpleCurrency(locale: 'vi_VN');
+    // Chỉ hiện nút khi status là 'completed' (Đã giao hàng thành công)
+    final canReview = order.status == 'completed';
 
     // Logic: Chỉ cho phép hủy nếu trạng thái là 'pending' hoặc 'processing'
-    // VÀ chưa thanh toán (unpaid) - Tùy logic nghiệp vụ,
-    // Backend báo là nếu paid thì refunding, nên ở đây ta cứ cho hủy nếu chưa ship (pending/processing).
+    // VÀ chưa thanh toán (unpaid) (hoặc tùy nghiệp vụ backend cho phép refunding)
     final canCancel =
         (order.status == 'pending' || order.status == 'processing');
 
@@ -122,7 +127,7 @@ class OrderDetailView extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (order.note != null) ...[
+                if (order.note != null && order.note!.isNotEmpty) ...[
                   const Divider(height: 20),
                   Text(
                     "Note: ${order.note}",
@@ -188,44 +193,101 @@ class OrderDetailView extends StatelessWidget {
                   separatorBuilder: (_, __) => const Divider(),
                   itemBuilder: (context, index) {
                     final item = order.items![index];
-                    return Row(
+                    return Column(
+                      crossAxisAlignment:
+                          CrossAxisAlignment.end, // Căn phải cho nút Review
                       children: [
-                        Container(
-                          width: 60,
-                          height: 60,
-                          margin: const EdgeInsets.only(right: 12),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            image: (item.thumbnail != null)
-                                ? DecorationImage(
-                                    image: NetworkImage(item.thumbnail!),
-                                    fit: BoxFit.cover,
-                                  )
-                                : null,
-                            color: Colors.grey[200],
-                          ),
+                        // Thông tin sản phẩm
+                        Row(
+                          children: [
+                            Container(
+                              width: 60,
+                              height: 60,
+                              margin: const EdgeInsets.only(right: 12),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                image: (item.thumbnail != null)
+                                    ? DecorationImage(
+                                        image: NetworkImage(item.thumbnail!),
+                                        fit: BoxFit.cover,
+                                      )
+                                    : null,
+                                color: Colors.grey[200],
+                              ),
+                            ),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    "${item.size} | ${item.color} | x${item.quantity}",
+                                    style: const TextStyle(color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Text(
+                              currencyFormat.format(item.totalItemPrice),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.name,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
+
+                        // --- NÚT ĐÁNH GIÁ (CHỈ HIỆN KHI COMPLETED) ---
+                        if (canReview)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: SizedBox(
+                              height: 32,
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  // Chuyển sang màn hình viết review
+                                  // Chúng ta cần truyền variantId hoặc productId
+                                  // Giả sử item có productId (nếu model chưa có thì cần update API để trả về)
+                                  // Ở đây giả định item.productId đã có hoặc item.productName dùng để hiển thị
+
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => WriteReviewScreen(
+                                        // Lưu ý: Cần đảm bảo model OrderItem có productId
+                                        // Nếu chưa có, bạn cần sửa Model OrderItem ở backend/frontend
+                                        // Tạm thời mình giả định bạn lấy được productId từ item
+                                        productId: item.productId,
+                                        orderId: order.orderId,
+                                        productName:
+                                            item.name, // Truyền tên để hiển thị
+                                        productImage:
+                                            item.thumbnail, // Truyền ảnh
+                                        reviewRepo: context
+                                            .read<ReviewRepository>(),
+                                      ),
+                                    ),
+                                  );
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: Colors.orange),
+                                  foregroundColor: Colors.orange,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                ),
+                                child: const Text(
+                                  "Viết đánh giá",
+                                  style: TextStyle(fontSize: 12),
                                 ),
                               ),
-                              Text(
-                                "${item.size} | ${item.color} | x${item.quantity}",
-                                style: const TextStyle(color: Colors.grey),
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
-                        Text(
-                          currencyFormat.format(item.totalItemPrice),
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
+                        // ---------------------------------------------
                       ],
                     );
                   },
@@ -363,7 +425,7 @@ class OrderDetailView extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              // Gọi event Hủy
+              // Gọi event Hủy thông qua Bloc
               context.read<OrderDetailBloc>().add(
                 CancelOrderEvent(orderId, reasonController.text),
               );

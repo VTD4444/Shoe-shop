@@ -60,6 +60,7 @@ class OrderModel {
 }
 
 class OrderItem {
+  final String productId;
   final String name;
   final String size;
   final String color;
@@ -69,6 +70,7 @@ class OrderItem {
   final double? totalItemPrice; // Có trong Detail
 
   OrderItem({
+    required this.productId,
     required this.name,
     required this.size,
     required this.color,
@@ -80,6 +82,7 @@ class OrderItem {
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
     return OrderItem(
+      productId: json['product_id'] ?? json['variant']?['product_id'] ?? '',
       name:
           json['name'] ??
           json['product_name'] ??

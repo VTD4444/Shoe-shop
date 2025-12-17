@@ -2,9 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart'; // 3D lib
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:readmore/readmore.dart';
-import 'package:shoe_shop/features/cart/logic/cart_bloc.dart';
+import 'package:shoe_shop/core/utils/auth_guard.dart';
+import 'package:shoe_shop/features/product/data/repositories/review_repository.dart';
+import 'package:shoe_shop/features/product/presentation/product_reviews_section.dart';
+
+// --- IMPORTS CHO CART ---
+import '../../cart/logic/cart_bloc.dart';
+import '../../cart/presentation/cart_screen.dart'; // Import để điều hướng khi Buy Now
+
+// --- IMPORTS PRODUCT ---
 import '../logic/product_detail_bloc.dart';
 
 class ProductDetailScreen extends StatefulWidget {
@@ -19,7 +26,7 @@ class ProductDetailScreen extends StatefulWidget {
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   // Biến để switch giữa xem Ảnh và xem 3D
   bool _show3DModel = false;
-  int _currentImageIndex = 0; // Để theo dõi đang xem ảnh số mấy
+  int _currentImageIndex = 0;
 
   @override
   void initState() {
@@ -27,6 +34,58 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     context.read<ProductDetailBloc>().add(
       LoadProductDetailEvent(widget.productId),
     );
+  }
+
+  // Hàm xử lý chung cho việc thêm vào giỏ
+  void _handleAddToCart(
+    BuildContext context,
+    ProductDetailLoaded state, {
+    required bool isBuyNow,
+  }) {
+    // 1. Validate: Phải chọn Size/Màu trước
+    if (state.matchedVariant == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please select Size and Color first!"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (state.matchedVariant!.stock <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("This variant is out of stock"),
+          backgroundColor: Colors.grey,
+        ),
+      );
+      return;
+    }
+
+    // Dùng AuthGuard để bao bọc logic thêm giỏ hàng
+    AuthGuard.checkAuthOrLogin(context, () {
+      context.read<CartBloc>().add(
+        AddToCartEvent(variantId: state.matchedVariant!.id, quantity: 1),
+      );
+
+      if (isBuyNow) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const CartScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Added ${state.product.name} (${state.selectedSize}) to Cart",
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      }
+    });
   }
 
   @override
@@ -47,7 +106,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           return const SizedBox();
         },
       ),
-      // Sticky Bottom Bar "Add to Cart"
+      // Sticky Bottom Bar
       bottomNavigationBar: _buildBottomAction(context),
     );
   }
@@ -86,17 +145,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 Positioned.fill(
                   child: _show3DModel && has3D
                       ? ModelViewer(
-                          src: model3DPath, // 'assets/models_3d/file.glb'
+                          src: model3DPath,
                           alt: "A 3D model of ${state.product.name}",
-                          ar: true, // Cho phép AR trên Android/iOS
+                          ar: true,
                           autoRotate: true,
                           cameraControls: true,
                           backgroundColor: Colors.white,
-                          arModes: const [
-                            'scene-viewer',
-                            'webxr',
-                            'quick-look',
-                          ],
                         )
                       : PageView.builder(
                           itemCount: images.length,
@@ -116,7 +170,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ),
                 ),
 
-                // --- LAYER 2: INDICATOR (Dấu chấm tròn vị trí ảnh) ---
+                // --- 2. INDICATOR ---
                 if (!_show3DModel && images.length > 1)
                   Positioned(
                     bottom: 20,
@@ -140,13 +194,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                   ),
 
-                // --- LAYER 3: SWITCH 3D BUTTON ---
+                // --- 3. SWITCH 3D BUTTON ---
                 if (has3D)
                   Positioned(
                     bottom: 20,
                     right: 20,
                     child: FloatingActionButton.extended(
-                      heroTag: "btn3d", // Tránh lỗi Hero animation
+                      heroTag: "btn3d",
                       backgroundColor: Colors.black,
                       elevation: 4,
                       onPressed: () {
@@ -216,7 +270,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ),
                 const SizedBox(height: 8),
 
-                // Price (Update theo Variant)
+                // Price
                 Text(
                   formatCurrency.format(
                     state.matchedVariant?.finalPrice ?? state.product.basePrice,
@@ -283,44 +337,47 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 const SizedBox(height: 12),
                 Wrap(
                   spacing: 12,
-                  children: state.product.variants.map((v) => v.size).toSet().map((
-                    size,
-                  ) {
-                    final isSelected = size == state.selectedSize;
-                    // Check xem size này có available với color đang chọn không? (Logic nâng cao)
-                    final isAvailable = state.product.variants.any(
-                      (v) =>
-                          v.size == size &&
-                          v.colorName == state.selectedColor &&
-                          v.stock > 0,
-                    );
+                  children: state.product.variants
+                      .map((v) => v.size)
+                      .toSet()
+                      .map((size) {
+                        final isSelected = size == state.selectedSize;
+                        final isAvailable = state.product.variants.any(
+                          (v) =>
+                              v.size == size &&
+                              v.colorName == state.selectedColor &&
+                              v.stock > 0,
+                        );
 
-                    return Opacity(
-                      opacity: isAvailable ? 1.0 : 0.3, // Mờ đi nếu hết hàng
-                      child: GestureDetector(
-                        onTap: isAvailable
-                            ? () {
-                                context.read<ProductDetailBloc>().add(
-                                  SelectVariantEvent(size: size),
-                                );
-                              }
-                            : null,
-                        child: CircleAvatar(
-                          radius: 22,
-                          backgroundColor: isSelected
-                              ? Colors.black
-                              : Colors.grey[100],
-                          child: Text(
-                            size,
-                            style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.black,
-                              fontWeight: FontWeight.bold,
+                        return Opacity(
+                          opacity: isAvailable ? 1.0 : 0.3,
+                          child: GestureDetector(
+                            onTap: isAvailable
+                                ? () {
+                                    context.read<ProductDetailBloc>().add(
+                                      SelectVariantEvent(size: size),
+                                    );
+                                  }
+                                : null,
+                            child: CircleAvatar(
+                              radius: 22,
+                              backgroundColor: isSelected
+                                  ? Colors.black
+                                  : Colors.grey[100],
+                              child: Text(
+                                size,
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                        );
+                      })
+                      .toList(),
                 ),
 
                 const SizedBox(height: 32),
@@ -349,65 +406,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 const Divider(),
                 const SizedBox(height: 16),
 
-                // --- REVIEWS PREVIEW ---
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      "REVIEWS",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {},
-                      child: const Text(
-                        "View All",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
+                // --- REVIEWS ---
+                ProductReviewsSection(
+                  productId: state.product.id,
+                  // Lấy từ context hoặc khởi tạo mới nếu chưa có DI
+                  reviewRepo: context.read<ReviewRepository>(),
                 ),
-                ...state.reviews.reviews
-                    .take(2)
-                    .map(
-                      (review) => ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: const CircleAvatar(
-                          backgroundColor: Colors.grey,
-                          child: Icon(Icons.person, color: Colors.white),
-                        ),
-                        title: Text(
-                          review.userName,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            RatingBarIndicator(
-                              rating: review.rating,
-                              itemBuilder: (context, index) =>
-                                  const Icon(Icons.star, color: Colors.amber),
-                              itemCount: 5,
-                              itemSize: 14.0,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              review.content,
-                              style: const TextStyle(fontSize: 13),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                const SizedBox(height: 60), // Khoảng trống cho Bottom Bar
+                const SizedBox(height: 60),
               ],
             ),
           ),
@@ -417,20 +422,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Widget _buildBottomAction(BuildContext context) {
-    // Chúng ta dùng BlocBuilder ở đây để lấy trạng thái stock
     return BlocBuilder<ProductDetailBloc, ProductDetailState>(
       builder: (context, state) {
         if (state is! ProductDetailLoaded) return const SizedBox();
 
-        final isOutOfStock = (state.matchedVariant?.stock ?? 0) <= 0;
+        // Kiểm tra hết hàng nếu đã chọn đủ size/màu
+        final isOutOfStock =
+            state.matchedVariant != null && state.matchedVariant!.stock <= 0;
 
         return Container(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: Colors.black12,
+                color: Colors.black.withOpacity(0.05),
                 blurRadius: 10,
                 offset: const Offset(0, -5),
               ),
@@ -439,67 +445,67 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           child: SafeArea(
             child: Row(
               children: [
+                // --- NÚT 1: ADD TO CART ---
                 Expanded(
-                  child: ElevatedButton(
-                    onPressed: isOutOfStock
-                        ? null
-                        : () {
-                            // 1. Validate: Phải chọn Size/Màu trước
-                            if (state.matchedVariant == null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    "Please select Size and Color first!",
-                                  ),
-                                ),
-                              );
-                              return;
-                            }
-
-                            // 2. Gọi Global CartBloc để thêm
-                            context.read<CartBloc>().add(
-                              AddToCartEvent(
-                                variantId: state.matchedVariant!.id,
-                                quantity: 1,
-                              ),
-                            );
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  "Added ${state.product.name} (Size: ${state.selectedSize}) to Cart",
-                                ),
-                              ),
-                            );
-                          },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
+                  child: SizedBox(
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      onPressed: isOutOfStock
+                          ? null
+                          : () => _handleAddToCart(
+                              context,
+                              state,
+                              isBuyNow: false,
+                            ),
+                      icon: const Icon(
+                        Icons.shopping_cart_outlined,
+                        color: Colors.black,
                       ),
-                    ),
-                    child: Text(
-                      isOutOfStock ? "OUT OF STOCK" : "ADD TO CART",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        letterSpacing: 1.0,
+                      label: const Text(
+                        "ADD TO CART",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.black),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ),
                 ),
+
                 const SizedBox(width: 16),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black),
+
+                // --- NÚT 2: BUY NOW ---
+                Expanded(
+                  child: SizedBox(
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: isOutOfStock
+                          ? null
+                          : () => _handleAddToCart(
+                              context,
+                              state,
+                              isBuyNow: true,
+                            ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        isOutOfStock ? "OUT OF STOCK" : "BUY NOW",
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.try_sms_star_outlined,
-                    color: Colors.black,
-                  ), // Icon "Try On" giả lập
                 ),
               ],
             ),

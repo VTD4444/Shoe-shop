@@ -89,9 +89,7 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
         // Lấy list địa chỉ
         final addresses = await repository.getMyAddresses();
         if (addresses.isEmpty) {
-          emit(
-            CheckoutFailure("Vui lòng thêm địa chỉ giao hàng trước (Mock ID)"),
-          );
+          emit(CheckoutFailure("Vui lòng thêm địa chỉ giao hàng trước"));
           return;
         }
         final defaultAddressId = addresses.first.addressId;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shoe_shop/features/discovery/presentation/home_screen.dart';
 import '../logic/auth_bloc.dart';
 import '../logic/auth_event.dart';
 import '../logic/auth_state.dart';
@@ -46,11 +47,17 @@ class _LoginScreenState extends State<LoginScreen> {
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthSuccess) {
-            // Đăng nhập thành công -> Logic điều hướng đã có ở main.dart (AppNavigator)
-            // Hoặc có thể dùng Navigator.pushReplacementNamed(context, '/home');
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('Welcome back!')));
+            if (Navigator.canPop(context)) {
+              // Nếu có thể Back -> Đóng màn hình Login và trả về true
+              // Để AuthGuard biết là đã login xong rồi, hãy chạy tiếp hàm đi
+              Navigator.pop(context, true);
+            } else {
+              // Trường hợp hiếm: Nếu Login là màn hình root (không thể back) thì mới đẩy sang Home
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const HomeScreen()),
+              );
+            }
           } else if (state is AuthFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

@@ -13,8 +13,6 @@ class OrderRepository {
       final response = await _dioClient.dio.get(
         '/orders',
         queryParameters: {
-          'page': page,
-          'limit': 10,
           if (status != null && status != 'all') 'status': status,
         },
       );

@@ -51,8 +51,7 @@ class ShippingAddress {
       recipientName: json['recipient_name'],
       phone: json['phone'],
       // Ghép địa chỉ đơn giản để hiển thị
-      fullAddress:
-          "${json['street']}, ${json['ward']}, ${json['district']}, ${json['city']}",
+      fullAddress: "${json['ward']}, ${json['district']}, ${json['city']}",
     );
   }
 }

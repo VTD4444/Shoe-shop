@@ -45,3 +45,28 @@ class ReviewModel {
     );
   }
 }
+
+class ReviewSummaryModel {
+  final double averageRating;
+  final int totalReviews;
+  final Map<String, int> ratingCounts;
+  final List<ReviewModel> reviews;
+
+  ReviewSummaryModel({
+    required this.averageRating,
+    required this.totalReviews,
+    required this.ratingCounts,
+    required this.reviews,
+  });
+
+  factory ReviewSummaryModel.fromJson(Map<String, dynamic> json) {
+    return ReviewSummaryModel(
+      averageRating: (json['average_rating'] ?? 0).toDouble(),
+      totalReviews: json['total_reviews'] ?? 0,
+      ratingCounts: Map<String, int>.from(json['rating_counts'] ?? {}),
+      reviews: (json['reviews'] as List)
+          .map((e) => ReviewModel.fromJson(e))
+          .toList(),
+    );
+  }
+}

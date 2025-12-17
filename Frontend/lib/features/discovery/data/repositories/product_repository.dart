@@ -1,3 +1,4 @@
+import 'package:shoe_shop/features/checkout/data/models/search_query.dart';
 import 'package:shoe_shop/features/product/data/models/product_detail_model.dart';
 import 'package:shoe_shop/features/product/data/models/review_model.dart';
 import '../../../../core/api/dio_client.dart';
@@ -79,6 +80,20 @@ class ProductRepository {
     } catch (e) {
       // Trả về object rỗng nếu lỗi, không chặn UI chính
       return ReviewStats(averageRating: 0, totalReviews: 0, reviews: []);
+    }
+  }
+
+  Future<List<ProductModel>> searchProducts(SearchQuery query) async {
+    try {
+      final response = await _dioClient.dio.post(
+        '/products/search',
+        data: query.toJson(),
+      );
+
+      final List data = response.data['data'] ?? [];
+      return data.map((json) => ProductModel.fromJson(json)).toList();
+    } catch (e) {
+      throw Exception('Search failed');
     }
   }
 }
