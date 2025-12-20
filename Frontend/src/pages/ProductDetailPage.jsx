@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import productService from '../services/productService';
 import { formatCurrency } from '../utils/format';
 import { FiBox, FiImage } from 'react-icons/fi';
 import Model3DViewer from '../components/Model3DViewer';
+import ShoeTryOn from '../components/ShoeTryOn';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import { addToCart } from '../redux/slices/cartSlice';
@@ -16,12 +17,14 @@ const ProductDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const shoeTryOnRef = useRef(null); // Ref cho ShoeTryOn component
 
   // State cho lựa chọn của user
   const [selectedColor, setSelectedColor] = useState(null); // Lưu color_name (VD: "Red")
   const [selectedSize, setSelectedSize] = useState(null);   // Lưu size (VD: "42")
   const [activeImage, setActiveImage] = useState(null);     // Ảnh đang hiển thị to
   const [is3DMode, setIs3DMode] = useState(false); // Chế độ xem 3D
+  const [isTryOnOpen, setIsTryOnOpen] = useState(false); // State cho modal Try On
   const { isAuthenticated } = useSelector(state => state.auth);
 
   useEffect(() => {
@@ -48,7 +51,7 @@ const ProductDetailPage = () => {
   // LOGIC XỬ LÝ BIẾN THỂ (VARIANTS)
   // 1. Lấy danh sách màu duy nhất
   const uniqueColors = [...new Set(product.variants.map(v => v.color_name))].filter(Boolean);
-  
+
   // 2. Lấy danh sách size duy nhất
   const uniqueSizes = [...new Set(product.variants.map(v => v.size))].sort();
 
@@ -59,7 +62,7 @@ const ProductDetailPage = () => {
 
   // 4. Kiểm tra tồn kho
   const isOutOfStock = currentVariant && currentVariant.stock_quantity <= 0;
-  
+
   // 5. Tính giá (nếu chọn variant thì lấy final_price, ko thì lấy base_price)
   const displayPrice = currentVariant ? currentVariant.final_price : product.base_price;
 
@@ -92,9 +95,9 @@ const ProductDetailPage = () => {
 
     // 3. Gọi API qua Redux Thunk
     // Chỉ cần gửi variant_id và quantity
-    const resultAction = await dispatch(addToCart({ 
-      variant_id: currentVariant.variant_id, 
-      quantity: 1 
+    const resultAction = await dispatch(addToCart({
+      variant_id: currentVariant.variant_id,
+      quantity: 1
     }));
 
     if (addToCart.fulfilled.match(resultAction)) {
@@ -107,26 +110,26 @@ const ProductDetailPage = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-        
+
         {/* === LEFT: MEDIA VIEWER === */}
         <div className="space-y-4">
           <div className="aspect-square bg-gray-100 relative overflow-hidden rounded-lg shadow-inner">
-            
+
             {/* LOGIC HIỂN THỊ CHÍNH */}
             {is3DMode && model3D ? (
-               // Nếu đang bật mode 3D -> Hiện Viewer, truyền tên file (VD: nike.glb)
-               <Model3DViewer fileName={model3D.url} />
+              // Nếu đang bật mode 3D -> Hiện Viewer, truyền tên file (VD: nike.glb)
+              <Model3DViewer fileName={model3D.url} />
             ) : (
-               // Ngược lại -> Hiện ảnh
-               <img src={activeImage} alt={product.name} className="w-full h-full object-cover" />
+              // Ngược lại -> Hiện ảnh
+              <img src={activeImage} alt={product.name} className="w-full h-full object-cover" />
             )}
 
             {/* Nút Toggle 3D/Image */}
             {model3D && (
-              <button 
+              <button
                 onClick={toggle3DMode}
                 className={`absolute bottom-4 right-4 px-4 py-2 text-sm font-bold flex items-center space-x-2 shadow-lg transition-all transform hover:scale-105
-                  ${is3DMode 
+                  ${is3DMode
                     ? 'bg-white text-black border border-black' // Style nút khi đang xem 3D (để tắt)
                     : 'bg-black text-white' // Style nút khi đang xem ảnh (để bật)
                   }`}
@@ -147,9 +150,9 @@ const ProductDetailPage = () => {
           {/* Thumbnails List */}
           <div className="flex space-x-4 overflow-x-auto pb-2">
             {product.media.filter(m => m.media_type === 'image').map((media) => (
-              <img 
+              <img
                 key={media.media_id}
-                src={media.url} 
+                src={media.url}
                 alt="thumbnail"
                 onClick={() => setActiveImage(media.url)}
                 className={`w-20 h-20 object-cover cursor-pointer border-2 ${activeImage === media.url ? 'border-black' : 'border-transparent'}`}
@@ -164,7 +167,7 @@ const ProductDetailPage = () => {
             {product.brand?.name} - {product.category?.name}
           </h2>
           <h1 className="text-4xl font-black uppercase mb-4">{product.name}</h1>
-          
+
           <div className="text-2xl font-medium mb-8">
             {formatCurrency(displayPrice)}
           </div>
@@ -182,7 +185,7 @@ const ProductDetailPage = () => {
                   // Lấy mã hex của màu này từ variant đầu tiên tìm thấy
                   const variantWithColor = product.variants.find(v => v.color_name === color);
                   const hex = variantWithColor?.color_hex || '#000';
-                  
+
                   return (
                     <button
                       key={color}
@@ -220,25 +223,53 @@ const ProductDetailPage = () => {
           )}
 
           {/* Add to Cart Button */}
-          <button 
+          <button
             onClick={handleAddToCart}
             disabled={!currentVariant || isOutOfStock}
             className="w-full bg-black text-white py-4 font-bold uppercase tracking-widest hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors mb-4"
           >
-            {!currentVariant 
-              ? "Vui lòng chọn Size & Màu" 
-              : isOutOfStock 
-                ? "Hết hàng" 
+            {!currentVariant
+              ? "Vui lòng chọn Size & Màu"
+              : isOutOfStock
+                ? "Hết hàng"
                 : "Thêm vào giỏ hàng"}
           </button>
-          
-          {/* Nút Thử Giày Ảo (Placeholder) */}
-          <button className="w-full border border-black text-black py-4 font-bold uppercase tracking-widest hover:bg-gray-50 transition-colors">
+
+          {/* Nút Thử Giày Ảo */}
+          <button
+            onClick={() => setIsTryOnOpen(true)}
+            className="w-full border border-black text-black py-4 font-bold uppercase tracking-widest hover:bg-gray-50 transition-colors"
+          >
             Thử trên chân (AI Try-on)
           </button>
 
         </div>
       </div>
+
+      {/* Modal Try On */}
+      {isTryOnOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center">
+          {/* Close Button */}
+          <button
+            onClick={() => {
+              // Tắt camera trước khi đóng modal
+              if (shoeTryOnRef.current) {
+                shoeTryOnRef.current.stopCamera();
+              }
+              setIsTryOnOpen(false);
+            }}
+            className="absolute top-4 right-4 text-white text-3xl font-bold hover:text-gray-300 transition-colors z-[60]"
+            aria-label="Close Try On"
+          >
+            ✕
+          </button>
+
+          {/* ShoeTryOn Component */}
+          <div className="w-full h-full">
+            <ShoeTryOn ref={shoeTryOnRef} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

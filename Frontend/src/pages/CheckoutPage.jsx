@@ -166,14 +166,14 @@ const CheckoutPage = () => {
                 ${shippingMethod === 'standard' ? 'border-black bg-black text-white' : 'border-gray-200 hover:border-gray-400'}`}
               onClick={() => setShippingMethod('standard')}
             >
-              Tiêu chuẩn (Free)
+              Tiêu chuẩn (15k)
             </button>
             <button 
               className={`flex-1 py-4 border-2 font-bold text-sm uppercase transition-all
                 ${shippingMethod === 'express' ? 'border-black bg-black text-white' : 'border-gray-200 hover:border-gray-400'}`}
               onClick={() => setShippingMethod('express')}
             >
-              Hỏa tốc (50k)
+              Hỏa tốc (25k)
             </button>
           </div>
         </div>
