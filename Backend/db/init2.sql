@@ -87,3 +87,10 @@ VALUES (
 
 INSERT INTO vouchers (code, discount_type, discount_value, min_order_value, valid_from, valid_to, usage_limit, is_active,created_at)
 VALUES ('HELLO2025', 'fixed', 50000, 100000, NOW(), '2025-12-31', 100, true,now());
+
+-- Thêm khóa ngoại cho voucher
+ALTER TABLE orders
+ADD CONSTRAINT fk_orders_vouchers
+FOREIGN KEY (voucher_id)
+REFERENCES vouchers(voucher_id)
+ON DELETE SET NULL;

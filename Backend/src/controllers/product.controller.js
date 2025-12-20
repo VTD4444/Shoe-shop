@@ -294,6 +294,158 @@ const getProductDetail = asyncHandler(async (req, res) => {
   });
 });
 
+
+const getInventory = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10, search, sort } = req.body;
+
+  const offset = (page - 1) * limit;
+
+
+  const variantWhere = {};
+
+  const productWhere = {};
+
+  if (search) {
+    // Logic: Nếu từ khóa có vẻ giống SKU (chứa số và gạch ngang), ưu tiên tìm SKU
+    // Nếu muốn tìm cả 2 bảng cùng lúc thì query phức tạp hơn, ở đây ta ưu tiên SKU trước
+    // variantWhere.sku = { [Op.iLike]: `%${search}%` };
+
+    // Nếu muốn tìm thêm theo tên sản phẩm, bỏ comment dòng dưới (Lưu ý: sẽ thành phép AND hoặc INNER JOIN)
+    productWhere.name = { [Op.iLike]: `%${search}%` };
+  }
+
+  let orderClause = [['created_at', 'DESC']];
+
+  if (sort === 'stock_asc') {
+    orderClause = [['stock_quantity', 'ASC']];
+  } else if (sort === 'stock_desc') {
+    orderClause = [['stock_quantity', 'DESC']];
+  } else if (sort === 'latest') {
+    orderClause = [['created_at', 'DESC']];
+  }
+
+  const { count, rows } = await db.ProductVariant.findAndCountAll({
+    where: variantWhere,
+    limit: parseInt(limit),
+    offset: parseInt(offset),
+    order: orderClause,
+    include: [
+      {
+        model: db.Product,
+        as: 'product',
+        where: Object.keys(productWhere).length > 0 ? productWhere : undefined,
+        attributes: ['product_id', 'name', 'base_price'],
+        include: [
+          {
+            model: db.ProductMedia,
+            as: 'media',
+            where: { is_thumbnail: true },
+            limit: 1,
+            required: false,
+            attributes: ['url']
+          }
+        ]
+      }
+    ]
+  });
+
+  const formattedData = rows.map(variant => {
+    const product = variant.product;
+
+
+    const basePrice = parseFloat(product?.base_price || 0);
+    const modifier = parseFloat(variant.price_modifier || 0);
+    const finalPrice = basePrice + modifier;
+
+    return {
+      variant_id: variant.variant_id,
+      product_id: product?.product_id,
+
+      sku: variant.sku,
+      product_name: product?.name || 'Sản phẩm lỗi (Mất cha)',
+      image: product?.media?.[0]?.url || null,
+
+      attribute: `${variant.color_name || '?'} / ${variant.size || '?'}`,
+
+      original_price: basePrice,
+      price_modifier: modifier,
+      final_price: finalPrice,
+
+      stock_quantity: variant.stock_quantity,
+      status: variant.stock_quantity <= 5 ? 'low_stock' : 'in_stock',
+      is_active: true
+    };
+  });
+
+  return res.status(200).json({
+    message: "Lấy danh sách kho hàng thành công",
+    meta: {
+      current_page: parseInt(page),
+      total_pages: Math.ceil(count / limit),
+      total_items: count,
+      items_per_page: parseInt(limit)
+    },
+    data: formattedData
+  });
+});
+// ======================================================
+// API 4: CẬP NHẬT TỔNG THỂ (MASTER UPDATE)
+// ======================================================
+const updateProductMaster = asyncHandler(async (req, res) => {
+  const { id } = req.params; // Đây là Product ID
+  const {
+    name,
+    description,
+    base_price,
+    ar_model_url,
+    variants_update
+  } = req.body;
+
+  const t = await db.sequelize.transaction();
+
+  try {
+    const product = await db.Product.findByPk(id);
+    if (!product) {
+      await t.rollback();
+      return res.status(404).json({ message: "Không tìm thấy sản phẩm" });
+    }
+
+    await product.update({
+      name,
+      description,
+      base_price,
+      ...(ar_model_url !== undefined && { ar_model_url })
+    }, { transaction: t });
+
+    if (variants_update && Array.isArray(variants_update)) {
+      for (const item of variants_update) {
+        if (item.variant_id) {
+          await db.ProductVariant.update(
+            {
+              stock_quantity: item.stock_quantity,
+              price_modifier: item.price_modifier
+            },
+            {
+              where: { variant_id: item.variant_id },
+              transaction: t
+            }
+          );
+        }
+      }
+    }
+
+    await t.commit();
+
+    return res.status(200).json({
+      message: "Cập nhật sản phẩm và kho hàng thành công!"
+    });
+
+  } catch (error) {
+    await t.rollback();
+    console.error("Master Update Error:", error);
+    return res.status(500).json({ message: "Lỗi cập nhật sản phẩm", error: error.message });
+  }
+});
 export default {
-  searchProducts,getFilterMetadata,getTrendingProducts,  getProductDetail
+  searchProducts,getFilterMetadata,getTrendingProducts,  getProductDetail,getInventory,updateProductMaster
 };
