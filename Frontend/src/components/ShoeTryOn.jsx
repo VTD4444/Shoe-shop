@@ -16,7 +16,7 @@ const ShoeTryOn = () => {
           licenseKey: 'mm',
           previewElement: canvasRef.current,
 
-          effect: 'effects/test.deepar',
+          effect: '/effects/test.deepar',
 
           // CẤU HÌNH CAMERA SAU (Bắt buộc cho thử giày)
           additionalOptions: {

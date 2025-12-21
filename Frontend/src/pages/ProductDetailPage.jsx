@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import productService from '../services/productService';
 import { formatCurrency } from '../utils/format';
-import { FiBox, FiImage } from 'react-icons/fi';
+import { FiBox, FiImage, FiX } from 'react-icons/fi';
 import Model3DViewer from '../components/Model3DViewer';
+import ShoeTryOn from '../components/ShoeTryOn';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import { addToCart } from '../redux/slices/cartSlice';
@@ -22,7 +23,7 @@ const ProductDetailPage = () => {
   const [selectedSize, setSelectedSize] = useState(null);   // Lưu size (VD: "42")
   const [activeImage, setActiveImage] = useState(null);     // Ảnh đang hiển thị to
   const [is3DMode, setIs3DMode] = useState(false); // Chế độ xem 3D
-  // const [isTryOnOpen, setIsTryOnOpen] = useState(false); // Không dùng modal nữa
+  const [isTryOnOpen, setIsTryOnOpen] = useState(false); // Panel thử giày ảo
   const { isAuthenticated } = useSelector(state => state.auth);
 
   useEffect(() => {
@@ -179,21 +180,16 @@ const ProductDetailPage = () => {
             <div className="mb-6">
               <h3 className="font-bold text-sm uppercase mb-3">Màu sắc</h3>
               <div className="flex space-x-3">
-                {uniqueColors.map(color => {
-                  // Lấy mã hex của màu này từ variant đầu tiên tìm thấy
-                  const variantWithColor = product.variants.find(v => v.color_name === color);
-                  const hex = variantWithColor?.color_hex || '#000';
-
-                  return (
-                    <button
-                      key={color}
-                      onClick={() => setSelectedColor(color)}
-                      className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${selectedColor === color ? 'border-black ring-1 ring-black ring-offset-2' : 'border-gray-300'}`}
-                      style={{ backgroundColor: hex }}
-                      title={color}
-                    />
-                  );
-                })}
+                {uniqueColors.map(color => (
+                  <button
+                    key={color}
+                    onClick={() => setSelectedColor(color)}
+                    className={`px-4 py-2 rounded-full border-2 text-sm font-semibold transition-all
+                      ${selectedColor === color ? 'bg-black text-white border-black' : 'bg-white text-black border-gray-300 hover:border-black'}`}
+                  >
+                    {color}
+                  </button>
+                ))}
               </div>
             </div>
           )}
@@ -233,13 +229,37 @@ const ProductDetailPage = () => {
                 : "Thêm vào giỏ hàng"}
           </button>
 
+
           {/* Nút Thử Giày Ảo */}
           <button
-            onClick={() => navigate("/product/try-on")}
+            onClick={() => setIsTryOnOpen(true)}
             className="w-full border border-black text-black py-4 font-bold uppercase tracking-widest hover:bg-gray-50 transition-colors"
           >
             Thử trên chân (AI Try-on)
           </button>
+
+          {/* Panel toàn màn hình cho Try On */}
+          {isTryOnOpen && (
+            <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex flex-col items-center justify-center">
+              <div className="w-full h-full flex flex-col items-center justify-center relative">
+                <div className="mb-4 text-white text-lg font-semibold drop-shadow-lg">Hướng camera về phía chân bạn <button
+                  onClick={() => setIsTryOnOpen(false)}
+                  className="ml-20 text-white text-3xl p-2 rounded-full hover:bg-white hover:text-black transition"
+                  aria-label="Đóng thử giày"
+                >
+                  <FiX />
+                </button></div>
+                <ShoeTryOn />
+                {/* Logo che DeepAR.ai */}
+                <img
+                  src="/logo.png"
+                  alt="Shoe Shop Logo"
+                  className="absolute top-20 right-8 z-20 w-64 h-auto opacity-95 pointer-events-none select-none"
+                  style={{ maxWidth: '350px' }}
+                />
+              </div>
+            </div>
+          )}
 
         </div>
       </div>
