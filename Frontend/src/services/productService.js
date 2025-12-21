@@ -22,6 +22,16 @@ const productService = {
     return axiosClient.get('/products/trending', {
       params: { limit }
     });
+  },
+
+  getReviews(productId, params) {
+    // params: { page, limit, star, sort }
+    return axiosClient.get(`/products/${productId}/reviews`, { params });
+  },
+
+  submitReview(productId, data) {
+    // data: { order_id, rating, content }
+    return axiosClient.post(`/products/${productId}/reviews`, data);
   }
 };
 

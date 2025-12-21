@@ -40,7 +40,6 @@ function App() {
                 <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/payment/:id" element={<PaymentPage />} />
                 <Route path="/order-success/:id" element={<OrderSuccessPage />} />
-                <Route path="/profile/orders" element={<OrderHistoryPage />} />
                 <Route path="/order/:id" element={<OrderDetailPage />} />
                 <Route path="/profile" element={<ProfileLayout />}>
                   <Route index element={<UserProfilePage />} />
