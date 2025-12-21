@@ -18,12 +18,14 @@ import ChangePasswordPage from './pages/profile/ChangePasswordPage.jsx';
 import AddressBookPage from './pages/profile/AddressBookPage.jsx';
 import ProfileLayout from './layouts/ProfileLayout.jsx';
 import SideBar_Admin from './components/SideBar_Admin.jsx';
+import ShoeTryOn from './components/ShoeTryOn.jsx';
 
 function App() {
   return (
     <>
       <Routes>
         <Route path="/admin" element={<SideBar_Admin />} />
+        <Route path='/product/try-on' element={<ShoeTryOn />} />
         <Route
           path="*"
           element={

@@ -1,10 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import productService from '../services/productService';
 import { formatCurrency } from '../utils/format';
 import { FiBox, FiImage } from 'react-icons/fi';
 import Model3DViewer from '../components/Model3DViewer';
-import ShoeTryOn from '../components/ShoeTryOn';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import { addToCart } from '../redux/slices/cartSlice';
@@ -17,14 +16,13 @@ const ProductDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const shoeTryOnRef = useRef(null); // Ref cho ShoeTryOn component
 
   // State cho lựa chọn của user
   const [selectedColor, setSelectedColor] = useState(null); // Lưu color_name (VD: "Red")
   const [selectedSize, setSelectedSize] = useState(null);   // Lưu size (VD: "42")
   const [activeImage, setActiveImage] = useState(null);     // Ảnh đang hiển thị to
   const [is3DMode, setIs3DMode] = useState(false); // Chế độ xem 3D
-  const [isTryOnOpen, setIsTryOnOpen] = useState(false); // State cho modal Try On
+  // const [isTryOnOpen, setIsTryOnOpen] = useState(false); // Không dùng modal nữa
   const { isAuthenticated } = useSelector(state => state.auth);
 
   useEffect(() => {
@@ -237,7 +235,7 @@ const ProductDetailPage = () => {
 
           {/* Nút Thử Giày Ảo */}
           <button
-            onClick={() => setIsTryOnOpen(true)}
+            onClick={() => navigate("/product/try-on")}
             className="w-full border border-black text-black py-4 font-bold uppercase tracking-widest hover:bg-gray-50 transition-colors"
           >
             Thử trên chân (AI Try-on)
@@ -245,31 +243,6 @@ const ProductDetailPage = () => {
 
         </div>
       </div>
-
-      {/* Modal Try On */}
-      {isTryOnOpen && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center">
-          {/* Close Button */}
-          <button
-            onClick={() => {
-              // Tắt camera trước khi đóng modal
-              if (shoeTryOnRef.current) {
-                shoeTryOnRef.current.stopCamera();
-              }
-              setIsTryOnOpen(false);
-            }}
-            className="absolute top-4 right-4 text-white text-3xl font-bold hover:text-gray-300 transition-colors z-[60]"
-            aria-label="Close Try On"
-          >
-            ✕
-          </button>
-
-          {/* ShoeTryOn Component */}
-          <div className="w-full h-full">
-            <ShoeTryOn ref={shoeTryOnRef} />
-          </div>
-        </div>
-      )}
     </div>
   );
 };
