@@ -20,7 +20,7 @@ POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "email": "hieutest12@gmail.com",
+  "email": "admin@gmail.com",
   "password": "password123"
 }
 
@@ -402,7 +402,7 @@ GET {{baseUrl}}/products/c2dd3344-ee55-66ff-8899-aabbccddee01/reviews?sort=highe
 ### A. PHÂN HỆ DASHBOARD (Thống kê)
 ### ------------------------------------------
 
-@adminToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNTdlNWJhMDQtZTJjYi00ODQ1LWFkNzItN2M4OGFjZjU0MzI5Iiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzY2MTM3NjI0fQ.zGq7b3DVNx_0k82qaJXxTQJ1TAE8x_2yg9Fc88yB48M
+@adminToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYzQ4Nzg1MjYtNDYyNi00ZWM0LWI4ZDMtODE3MWM4NjhjNGUwIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzY2Mzk0NDI0fQ.kq8NjOzdhWiouZwn9zRajak9Jw37Kyqi0ilW1Do-T_w
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
@@ -442,18 +442,16 @@ Content-Type: application/json
 
 ### 33. Cập nhật Sản phẩm & Nhập kho (All-in-One)
 # API quan trọng: Sửa info, File AR và Nhập số lượng cho từng size
-PUT {{baseUrl}}/products/c2dd3344-ee55-66ff-8899-aabbccddee01
+PUT {{baseUrl}}/products/70ea836f-98a7-43c5-81e6-6121b2de2605
 Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
-  "name": "Nike Air Jordan 1 (Updated 2025)",
-  "base_price": 5500000,
   "variants_update": [
     {
       "variant_id": "d4ee5566-ff77-8899-00aa-bbccddeeff02",
       "stock_quantity": 50,
-      "price_modifier": 0
+      "price_modifier": 200000
     }
   ]
 }

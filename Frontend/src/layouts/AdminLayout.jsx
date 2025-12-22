@@ -1,43 +1,101 @@
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom'; // 1. Import cái này
+import { Outlet, Link, useLocation } from 'react-router-dom';
+import { FaBox, FaShoppingCart, FaUserFriends, FaCog, FaSearch, FaBell } from 'react-icons/fa';
 import { MdSpaceDashboard } from 'react-icons/md';
-import { FaBox, FaShoppingCart, FaUserFriends } from 'react-icons/fa';
 
-const SideBar_Admin = () => {
-    const navigate = useNavigate(); // Dùng để chuyển trang
-    const location = useLocation(); // Dùng để lấy URL hiện tại
+const AdminLayout = () => {
+    const location = useLocation();
 
     const menuItems = [
-        // path: Đường dẫn tương ứng khi bấm vào
-        { name: 'Dashboard', icon: <MdSpaceDashboard />, path: '/admin' },
-        { name: 'Sản phẩm', icon: <FaBox />, path: '/admin/products' },
-        { name: 'Đơn hàng', icon: <FaShoppingCart />, path: '/admin/orders' },
-        { name: 'Khách hàng', icon: <FaUserFriends />, path: '/admin/users' },
+        { name: 'Dashboard', icon: <MdSpaceDashboard size={20} />, path: '/admin' },
+        { name: 'Sản phẩm & Kho', icon: <FaBox size={18} />, path: '/admin/products' },
+        { name: 'Đơn hàng', icon: <FaShoppingCart size={18} />, path: '/admin/orders' },
+        { name: 'Khách hàng', icon: <FaUserFriends size={18} />, path: '/admin/users' },
     ];
-
+    const getCurrentPageName = () => {
+        const currentItem = menuItems.find(item => item.path === location.pathname);
+        return currentItem ? currentItem.name : 'Trang quản trị';
+    };
     return (
-        <div className="py-6 px-4">
-            <div className="mb-6 px-4 font-bold text-2xl text-blue-600">
-                Shoe Admin
-            </div>
+        <div className="flex h-screen bg-[#F3F4F6] font-sans">
 
-            <div className="space-y-2">
-                {menuItems.map((item) => {
-                    const isActive = location.pathname === item.path;
-                    return (
-                        <div
-                            key={item.name}
-                            onClick={() => navigate(item.path)}
-                            className={isActive ? 'bg-blue-600 text-white' : ''}
-                        >
-                            {item.icon}
-                            <span>{item.name}</span>
+            <aside className="w-64 bg-white border-r border-gray-200 flex-col hidden lg:flex fixed h-full z-10">
+                <div className="h-16 flex items-center gap-3 px-6 border-b border-gray-100">
+                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+                        <FaBox />
+                    </div>
+                    <span className="font-bold text-lg text-gray-800">ShoeStore Admin</span>
+                </div>
+
+                <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+                    {menuItems.map((item) => {
+                        const isActive = item.path === '/admin' ? location.pathname === item.path : location.pathname.startsWith(item.path);
+                        return (
+                            <Link
+                                key={item.path}
+                                to={item.path}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${isActive
+                                    ? 'bg-blue-50 text-blue-600'
+                                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                                    }`}
+                            >
+                                {item.icon}
+                                {item.name}
+                            </Link>
+                        );
+                    })}
+                </nav>
+
+
+                <div className="p-4 border-t border-gray-100">
+                    <button className="flex items-center gap-3 px-4 py-2 text-gray-500 hover:text-gray-900 text-sm font-medium w-full">
+                        <FaCog /> Cài đặt
+                    </button>
+                </div>
+            </aside>
+
+            <div className="flex-1 flex flex-col lg:ml-64 transition-all duration-300">
+
+                <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 sticky top-0 z-20">
+                    <div className="flex items-center text-sm text-gray-500">
+                        <Link to="/admin" className="hover:text-blue-600 transition-colors">Trang chủ</Link>
+
+                        {location.pathname !== '/admin' && (
+                            <>
+                                <span className="mx-2">›</span>
+                                <span className="font-medium text-gray-900">
+                                    {getCurrentPageName()}
+                                </span>
+                            </>
+                        )}
+                    </div>
+
+                    <div className="flex items-center gap-6">
+                        <button className="relative text-gray-400 hover:text-gray-600">
+                            <FaBell size={18} />
+                            <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+                        </button>
+
+                        <div className="flex items-center gap-3 pl-6 border-l border-gray-200">
+                            <div className="text-right hidden sm:block">
+                                <p className="text-sm font-bold text-gray-900">Admin User</p>
+                                <p className="text-xs text-gray-500">Quản lý cửa hàng</p>
+                            </div>
+                            <img
+                                src="https://ui-avatars.com/api/?name=Admin+User&background=0D8ABC&color=fff"
+                                alt="Admin"
+                                className="w-9 h-9 rounded-full border border-gray-200"
+                            />
                         </div>
-                    );
-                })}
+                    </div>
+                </header>
+
+                <main className="flex-1 p-8 overflow-y-auto">
+                    <Outlet />
+                </main>
             </div>
         </div>
     );
 };
 
-export default SideBar_Admin;
+export default AdminLayout;
