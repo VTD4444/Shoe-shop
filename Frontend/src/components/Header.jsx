@@ -8,7 +8,6 @@ import { clearCartLocal } from '../redux/slices/cartSlice'; // Import thêm acti
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isAuthenticated, user } = useSelector((state) => state.auth);
-  // Lấy số lượng từ cart (nếu bạn đã làm phần giỏ hàng)
   const { totalQuantity } = useSelector((state) => state.cart);
 
   const dispatch = useDispatch();

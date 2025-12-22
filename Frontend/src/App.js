@@ -17,15 +17,21 @@ import UserProfilePage from './pages/profile/UserProfilePage.jsx';
 import ChangePasswordPage from './pages/profile/ChangePasswordPage.jsx';
 import AddressBookPage from './pages/profile/AddressBookPage.jsx';
 import ProfileLayout from './layouts/ProfileLayout.jsx';
-import SideBarAdmin from './components/SideBar_Admin.jsx';
 import ShoeTryOn from './components/ShoeTryOn.jsx';
-
+import AdminLayout from './layouts/AdminLayout.jsx';
+import InventoryPage from './pages/admin/InventoryPage.jsx';
 function App() {
   return (
     <>
       <Routes>
-        <Route path="/admin" element={<SideBarAdmin />} />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<div>Dashboard</div>} />
+          <Route path="products" element={<InventoryPage />} />
+
+        </Route>
+
         <Route path='/product/try-on' element={<ShoeTryOn />} />
+
         <Route
           path="*"
           element={
@@ -51,7 +57,7 @@ function App() {
             </MainLayout>
           }
         />
-      </Routes>
+      </Routes >
       <ToastContainer position="bottom-right" autoClose={2000} theme="dark" />
     </>
   );

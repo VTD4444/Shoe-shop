@@ -7,8 +7,8 @@ POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
-  "full_name": "Nguyen Van Hieu",
-  "email": "hieutest12@gmail.com",
+  "full_name": "admin",
+  "email": "admin@gmail.com",
   "password": "password123",
   "phone_number": "0987654321"
 }
@@ -20,7 +20,7 @@ POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "email": "hieutest12@gmail.com",
+  "email": "admin@gmail.com",
   "password": "password123"
 }
 
@@ -115,19 +115,19 @@ Content-Type: application/json
 # 1. Chạy API "Lấy danh sách" ở trên.
 # 2. Copy một cái "address_id" bất kỳ (ví dụ: "a1b2c3d4...").
 # 3. Thay thế vào chỗ <ID_DIA_CHI> ở link bên dưới.
-@addressId =87a822e7-4612-4912-8a44-021610aa2765
+@addressId =01c18044-f948-4e52-86af-183ecb8cd54a
 PUT {{baseUrl}}/addresses/{{addressId}}
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "recipient_name": "Nguyen uuu (Da Sua)",
+  "recipient_name": "Nguyen A (Da Sua)",
   "phone": "0999888777",
-  "street": "So 1330 Ngo 12 (Sua)",
+  "street": "So 1330s Ngo 12 (Sua)",
   "ward": "Lang Thuong",
   "district": "Dong Da",
   "city": "Ha Noi",
-  "is_default": false
+  "is_default": true
 }
 
 
@@ -228,7 +228,7 @@ Content-Type: application/json
 ### ==========================================
 ### 20. XÓA KHỎI GIỎ (DELETE /cart/:id)
 ### ==========================================
-DELETE {{baseUrl}}/cart/41104049-f508-4763-a48f-7336c33e2bf3
+DELETE {{baseUrl}}/cart/32549153-0bfa-4e7f-8131-ba2341288909
 Authorization: Bearer {{token}}
 
 ### ==========================================
@@ -345,7 +345,7 @@ Content-Type: application/json
 
 ### Case 2: Lỗi chưa mua (Hoặc đơn chưa completed)
 # Thay bằng một order_id đang pending hoặc order_id tào lao
-POST {{baseUrl}}/products/c2dd3344-ee55-66ff-8899-aabbccddee01/reviews
+POST {{baseUrl}}/products/b10f106f-ea66-405a-b752-6153c5be46c2/reviews
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
@@ -374,7 +374,7 @@ Content-Type: application/json
 {
   "order_id": "b10f106f-ea66-405a-b752-6153c5be46c2",
   "rating": 1,
-  "content": "giày đẹp lắm mn"
+  "content": "treo đầu dê bán thịt chó à mày"
 }
 
 ### ==========================================
@@ -390,3 +390,88 @@ GET {{baseUrl}}/products/c2dd3344-ee55-66ff-8899-aabbccddee01/reviews?star=4
 
 ### Test 3: Sắp xếp điểm cao nhất
 GET {{baseUrl}}/products/c2dd3344-ee55-66ff-8899-aabbccddee01/reviews?sort=highest
+
+
+
+### ==========================================
+### NHÓM 5: ADMIN DASHBOARD & QUẢN TRỊ
+### (Yêu cầu Token Admin)
+### ==========================================
+
+### ------------------------------------------
+### A. PHÂN HỆ DASHBOARD (Thống kê)
+### ------------------------------------------
+
+@adminToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYzQ4Nzg1MjYtNDYyNi00ZWM0LWI4ZDMtODE3MWM4NjhjNGUwIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzY2Mzk0NDI0fQ.kq8NjOzdhWiouZwn9zRajak9Jw37Kyqi0ilW1Do-T_w
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@gmail.com",
+  "password": "password123"
+}
+### 29. Lấy thống kê tổng quan (4 ô trên cùng)
+# Trả về: Doanh thu, Tổng đơn, Đơn chờ, Hàng sắp hết
+GET {{baseUrl}}/dashboard/stats
+Authorization: Bearer {{adminToken}}
+
+### 30. Lấy Top 5 biến thể bán chạy
+# Trả về danh sách để vẽ biểu đồ
+GET {{baseUrl}}/dashboard/top-products?time_range=month
+Authorization: Bearer {{adminToken}}
+
+### ------------------------------------------
+### B. PHÂN HỆ KHO HÀNG (INVENTORY)
+### ------------------------------------------
+
+### 31. Lấy bảng kho hàng (Dùng Body)
+POST {{baseUrl}}/products/inventory
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "page": 1,
+  "limit": 5,
+  "search": "NIKE",
+  "sort": "stock_asc"
+}
+
+### ------------------------------------------
+### C. PHÂN HỆ SẢN PHẨM (MASTER UPDATE)
+### ------------------------------------------
+
+### 33. Cập nhật Sản phẩm & Nhập kho (All-in-One)
+# API quan trọng: Sửa info, File AR và Nhập số lượng cho từng size
+PUT {{baseUrl}}/products/70ea836f-98a7-43c5-81e6-6121b2de2605
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "variants_update": [
+    {
+      "variant_id": "d4ee5566-ff77-8899-00aa-bbccddeeff02",
+      "stock_quantity": 50,
+      "price_modifier": 200000
+    }
+  ]
+}
+
+### ------------------------------------------
+### D. PHÂN HỆ ĐƠN HÀNG (ORDER MANAGEMENT)
+### ------------------------------------------
+
+### 34. Lấy danh sách toàn bộ đơn hàng (Admin View)
+# Lấy đơn mới nhất, trạng thái 'pending'
+GET {{baseUrl}}/orders?page=1&limit=10&status=pending
+Authorization: Bearer {{adminToken}}
+
+### 35. Duyệt đơn hàng / Cập nhật trạng thái
+# Chuyển từ 'pending' -> 'shipping'
+PATCH {{baseUrl}}/orders/<THAY_ORDER_ID_VAO_DAY>/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": "shipped",
+  "note": "Đã giao cho Shipper GHTK, mã vận đơn: #VN123456"
+}

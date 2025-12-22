@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const authMiddleware = async (req, res, next) => {
+const verifyToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -25,9 +25,22 @@ const authMiddleware = async (req, res, next) => {
     next();
 
   } catch (error) {
-      console.log(error)
-    return res.status(403).json({ message: 'lỗi j đó rồi' });
+    console.log(error);
+    return res.status(403).json({ message: 'Token lỗi hoặc hết hạn' });
   }
 };
 
-export default authMiddleware;
+const isAdmin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    return res.status(403).json({
+      message: 'Truy cập bị từ chối! Bạn không phải là Quản trị viên.'
+    });
+  }
+};
+
+
+export default verifyToken;
+
+export { verifyToken, isAdmin };

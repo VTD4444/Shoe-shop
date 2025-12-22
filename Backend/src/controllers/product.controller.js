@@ -294,6 +294,212 @@ const getProductDetail = asyncHandler(async (req, res) => {
   });
 });
 
+
+const getInventory = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10, search, sort, brand_id, category_id } = req.body;
+  const offset = (page - 1) * limit;
+
+  const productWhere = {};
+  const variantWhere = {};
+
+  if (search) {
+    productWhere.name = { [Op.iLike]: `%${search}%` };
+  }
+    if (brand_id) {
+    productWhere.brand_id = brand_id;
+  }
+  if (category_id) {
+    productWhere.category_id = category_id;
+  }
+  let orderClause = [['created_at', 'DESC']];
+  if (sort === 'stock_asc') {
+    orderClause = [
+      [db.sequelize.literal('(SELECT COALESCE(SUM("stock_quantity"), 0) FROM "product_variants" WHERE "product_variants"."product_id" = "Product"."product_id")'), 'ASC']
+    ];
+  } else if (sort === 'stock_desc') {
+    orderClause = [
+      [db.sequelize.literal('(SELECT COALESCE(SUM("stock_quantity"), 0) FROM "product_variants" WHERE "product_variants"."product_id" = "Product"."product_id")'), 'DESC']
+    ];
+  } else if (sort === 'price_asc') {
+    orderClause = [['base_price', 'ASC']];
+  } else if (sort === 'price_desc') {
+    orderClause = [['base_price', 'DESC']];
+  } else if (sort === 'name_asc') {
+    orderClause = [['name', 'ASC']];
+  } else if (sort === 'name_desc') {
+    orderClause = [['name', 'DESC']];
+  }
+
+  const { count, rows } = await db.Product.findAndCountAll({
+    where: productWhere,
+    limit: parseInt(limit),
+    offset: parseInt(offset),
+    order: orderClause,
+    distinct: true,
+    include: [
+      {
+        model: db.ProductVariant,
+        as: 'variants',
+        where: Object.keys(variantWhere).length > 0 ? variantWhere : undefined,
+        required: false,
+        order: [['stock_quantity', 'ASC']]
+      },
+      {
+        model: db.ProductMedia,
+        as: 'media',
+        where: { is_thumbnail: true },
+        limit: 1,
+        required: false,
+        attributes: ['url']
+      },
+      {
+        model: db.Brand,
+        as: 'brand',
+        attributes: ['brand_id', 'name']
+      },
+      {
+        model: db.Category,
+        as: 'category',
+        attributes: ['category_id', 'name']
+      }
+    ]
+  });
+
+  const formattedData = rows.map(product => {
+    const basePrice = parseFloat(product.base_price || 0);
+    const variants = product.variants || [];
+
+    const totalStock = variants.reduce((sum, v) => sum + v.stock_quantity, 0);
+
+    const mappedVariants = variants.map(v => ({
+      variant_id: v.variant_id,
+      sku: v.sku,
+      attribute: `${v.color_name || '?'} / ${v.size || '?'}`,
+
+      color_name: v.color_name,
+      size: v.size,
+
+      original_price: basePrice,
+      price_modifier: parseFloat(v.price_modifier || 0),
+      final_price: basePrice + parseFloat(v.price_modifier || 0), // Giá bán cuối
+
+      stock_quantity: v.stock_quantity,
+      status: v.stock_quantity <= 5 ? 'low_stock' : 'in_stock',
+    }));
+
+    return {
+      product_id: product.product_id,
+      product_name: product.name,
+      image: product.media?.[0]?.url || 'https://via.placeholder.com/150',
+        description: product.description || '',
+      brand_id: product.brand?.brand_id || null,
+      brand_name: product.brand?.name || 'Chưa cập nhật',
+
+      category_id: product.category?.category_id || null,
+      category_name: product.category?.name || 'Chưa cập nhật',
+
+      total_stock: totalStock,
+      total_variants: variants.length,
+      variants: mappedVariants
+    };
+  });
+
+  return res.status(200).json({
+    message: "Lấy danh sách kho hàng thành công",
+    meta: {
+      current_page: parseInt(page),
+      total_pages: Math.ceil(count / limit),
+      total_items: count,
+      items_per_page: parseInt(limit)
+    },
+    data: formattedData
+  });
+});
+
+const updateProductMaster = asyncHandler(async (req, res) => {
+  const { id } = req.params; // Product ID
+  const {
+    name,
+    description,
+    base_price,
+    brand_id,     // <-- Nhận ID thương hiệu
+    category_id,  // <-- Nhận ID danh mục
+    is_active,    // <-- Trạng thái
+    ar_model_url,
+
+    // Danh sách variants cần update
+    variants_update
+  } = req.body;
+
+  const t = await db.sequelize.transaction();
+
+  try {
+    // 1. Update Product Cha
+    const product = await db.Product.findByPk(id, { transaction: t });
+    if (!product) {
+      await t.rollback();
+      return res.status(404).json({ message: "Không tìm thấy sản phẩm" });
+    }
+
+    const newBasePrice = base_price !== undefined ? parseFloat(base_price) : parseFloat(product.base_price);
+
+    await product.update({
+      name,
+      description,
+      base_price: newBasePrice,
+      brand_id,
+      category_id,
+      is_active,
+      ...(ar_model_url !== undefined && { ar_model_url })
+    }, { transaction: t });
+
+    if (variants_update && Array.isArray(variants_update)) {
+      for (const item of variants_update) {
+        if (item.variant_id) {
+
+
+          let newModifier = undefined;
+
+          if (item.final_price !== undefined) {
+             newModifier = parseFloat(item.final_price) - newBasePrice;
+          } else if (item.price_modifier !== undefined) {
+             newModifier = item.price_modifier;
+          }
+
+          const updateData = {};
+          if (item.stock_quantity !== undefined) updateData.stock_quantity = item.stock_quantity;
+          if (newModifier !== undefined) updateData.price_modifier = newModifier;
+          if (item.sku) updateData.sku = item.sku; // Cho phép sửa SKU
+
+          if (Object.keys(updateData).length > 0) {
+            await db.ProductVariant.update(
+              updateData,
+              {
+                where: {
+                  variant_id: item.variant_id,
+                  product_id: id
+                },
+                transaction: t
+              }
+            );
+          }
+        }
+      }
+    }
+
+    await t.commit();
+
+    return res.status(200).json({
+      message: "Cập nhật sản phẩm thành công!",
+      data: { product_id: id }
+    });
+
+  } catch (error) {
+    await t.rollback();
+    console.error("Master Update Error:", error);
+    return res.status(500).json({ message: "Lỗi cập nhật sản phẩm", error: error.message });
+  }
+});
 export default {
-  searchProducts,getFilterMetadata,getTrendingProducts,  getProductDetail
+  searchProducts,getFilterMetadata,getTrendingProducts,  getProductDetail,getInventory,updateProductMaster
 };
