@@ -1,15 +1,19 @@
-import express from 'express';
-import orderController from '../controllers/order.controller.js';
-import authMiddleware from '../middlewares/auth.middleware.js';
+import express from "express";
+import orderController from "../controllers/order.controller.js";
+import authMiddleware from "../middlewares/auth.middleware.js";
+import adminAuthMiddleware from "../middlewares/adminAuth.middleware.js";
 
 const router = express.Router();
 
+router.get("/all", orderController.getAllOrders, adminAuthMiddleware);
+router.put("/status", orderController.changeOrderStatus, adminAuthMiddleware);
+
 router.use(authMiddleware);
-router.get('/', orderController.getOrderHistory);
-router.post('/preview', orderController.previewOrder);
-router.post('/', orderController.createOrder);
-router.get('/:id', orderController.getOrderDetail);
-router.put('/:id/pay', orderController.markOrderAsPaid);
-router.put('/:id/cancel', orderController.cancelOrder);
+router.get("/", orderController.getOrderHistory);
+router.post("/preview", orderController.previewOrder);
+router.post("/", orderController.createOrder);
+router.get("/:id", orderController.getOrderDetail);
+router.put("/:id/pay", orderController.markOrderAsPaid);
+router.put("/:id/cancel", orderController.cancelOrder);
 
 export default router;
