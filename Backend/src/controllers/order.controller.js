@@ -514,14 +514,20 @@ const cancelOrder = asyncHandler(async (req, res) => {
 });
 
 const getOrderDetail = asyncHandler(async (req, res) => {
-  const userId = req.user.user_id;
   const { id } = req.params;
 
+  const whereClause = { order_id: id };
+  // Check if req.user exists (auth middleware active)
+  if (req.user) {
+    const userId = req.user.user_id;
+    // Nếu không phải admin thì mới check user_id
+    if (req.user.role !== "admin") {
+      whereClause.user_id = userId;
+    }
+  }
+
   const order = await db.Order.findOne({
-    where: {
-      order_id: id,
-      user_id: userId,
-    },
+    where: whereClause,
     include: [
       {
         model: db.OrderItem,
@@ -631,6 +637,7 @@ const changeOrderStatus = asyncHandler(async (req, res) => {
   const orderId = req.body.orderId;
   const newStatus = req.body.status;
   const order = await db.Order.findByPk(orderId);
+  console.log(order);
   if (!order) {
     return res.status(404).json({ message: "Order not found" });
   }
