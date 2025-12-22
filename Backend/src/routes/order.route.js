@@ -5,8 +5,8 @@ import adminAuthMiddleware from "../middlewares/adminAuth.middleware.js";
 
 const router = express.Router();
 
-router.get("/all", orderController.getAllOrders, adminAuthMiddleware);
-router.put("/status", orderController.changeOrderStatus, adminAuthMiddleware);
+router.get("/all", adminAuthMiddleware, orderController.getAllOrders);
+router.put("/status", adminAuthMiddleware, orderController.changeOrderStatus);
 
 router.use(authMiddleware);
 router.get("/", orderController.getOrderHistory);
