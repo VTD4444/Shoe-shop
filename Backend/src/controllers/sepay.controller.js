@@ -28,7 +28,6 @@ export const sepayWebhook = asyncHandler(async (req, res) => {
     // --- TRƯỜNG HỢP: KHÁCH SỬA NỘI DUNG (Không tìm thấy đơn) ---
     if (!foundOrder) {
       console.log(`🚨 GIAO DỊCH LẠC TRÔI: Nhận ${transferAmount} nhưng không tìm thấy Order ID trong content: "${content}"`);
-      // Ở đây bạn có thể lưu giao dịch này vào bảng 'UnknownTransactions' để Admin đối soát sau
       return res.json({ success: true, message: "Transaction received but no Order ID match" });
     }
 
@@ -50,7 +49,6 @@ export const sepayWebhook = asyncHandler(async (req, res) => {
 
     // --- TRƯỜNG HỢP: ĐỦ TIỀN (HAPPY CASE) ---
     foundOrder.payment_status = 'paid';
-    foundOrder.status = 'processing';
     foundOrder.note = `${foundOrder.note || ''} | [Sepay] Đã thanh toán đủ. Ref: ${referenceCode}`;
     await foundOrder.save();
     

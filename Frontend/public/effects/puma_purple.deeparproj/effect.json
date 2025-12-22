@@ -1,0 +1,306 @@
+{
+    "animationEnabled": true,
+    "children": [
+        {
+            "animationEnabled": true,
+            "children": [
+                {
+                    "animationEnabled": true,
+                    "children": [
+                        {
+                            "animationEnabled": true,
+                            "children": [
+                                {
+                                    "animationEnabled": true,
+                                    "children": [
+                                        {
+                                            "animationEnabled": true,
+                                            "children": [
+                                                {
+                                                    "animationEnabled": true,
+                                                    "components": [
+                                                        {
+                                                            "blendShapeWeightsExpanded": false,
+                                                            "bonesExpanded": false,
+                                                            "enabled": true,
+                                                            "material": "~/default.mat",
+                                                            "mesh": "~/Object_0.armesh",
+                                                            "meshDriver": "none",
+                                                            "open": true,
+                                                            "type": "meshRenderer"
+                                                        }
+                                                    ],
+                                                    "depth": 1,
+                                                    "dynamicUv": "disabled",
+                                                    "editorAnimationsOpen": false,
+                                                    "editorOpen": false,
+                                                    "editorPropertyOpen": true,
+                                                    "editorSelectedAnimation": "",
+                                                    "enabled": true,
+                                                    "localPosition": [
+                                                        -0.015793099999427795,
+                                                        0.05557797849178314,
+                                                        -0.1060682013630867
+                                                    ],
+                                                    "localRotation": [
+                                                        1.884473480040505e-11,
+                                                        -1.0553049545336535e-09,
+                                                        -2.2180543624017446e-08,
+                                                        1.0
+                                                    ],
+                                                    "localScale": [
+                                                        1.5444014072418213,
+                                                        1.5443997383117676,
+                                                        1.5444003343582153
+                                                    ],
+                                                    "name": "Object_2",
+                                                    "viewId": 2
+                                                }
+                                            ],
+                                            "depth": 1,
+                                            "dynamicUv": "disabled",
+                                            "editorAnimationsOpen": false,
+                                            "editorOpen": true,
+                                            "editorPropertyOpen": true,
+                                            "editorSelectedAnimation": "",
+                                            "enabled": true,
+                                            "localPosition": [
+                                                0.0,
+                                                0.0,
+                                                0.0
+                                            ],
+                                            "localRotation": [
+                                                0.0,
+                                                0.0,
+                                                0.0,
+                                                1.0
+                                            ],
+                                            "localScale": [
+                                                1.0,
+                                                1.0,
+                                                1.0
+                                            ],
+                                            "name": "puma_low.obj.cleaner.materialmerger.gles",
+                                            "viewId": 2
+                                        }
+                                    ],
+                                    "depth": 1,
+                                    "dynamicUv": "disabled",
+                                    "editorAnimationsOpen": false,
+                                    "editorOpen": true,
+                                    "editorPropertyOpen": true,
+                                    "editorSelectedAnimation": "",
+                                    "enabled": true,
+                                    "localPosition": [
+                                        0.01071929931640625,
+                                        -0.04556969553232193,
+                                        0.04576991870999336
+                                    ],
+                                    "localRotation": [
+                                        -0.0023780346382409334,
+                                        0.0001273995148949325,
+                                        0.9998814463615417,
+                                        -0.015212376601994038
+                                    ],
+                                    "localScale": [
+                                        61.67338943481445,
+                                        61.67339324951172,
+                                        61.673404693603516
+                                    ],
+                                    "name": "model_right",
+                                    "sceneBase": "~/puma_shoe_purple_3d_scan.glb",
+                                    "viewId": 2
+                                }
+                            ],
+                            "depth": 1,
+                            "dynamicUv": "disabled",
+                            "editorAnimationsOpen": false,
+                            "editorOpen": true,
+                            "editorPropertyOpen": true,
+                            "editorSelectedAnimation": "",
+                            "enabled": true,
+                            "localEulerAngles": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "localPosition": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ],
+                            "localScale": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ],
+                            "name": "shopar_shoe_right_origin_compensator",
+                            "viewId": 2
+                        }
+                    ],
+                    "depth": 1,
+                    "dynamicUv": "disabled",
+                    "editorAnimationsOpen": false,
+                    "editorOpen": true,
+                    "editorPropertyOpen": true,
+                    "editorSelectedAnimation": "",
+                    "enabled": true,
+                    "localEulerAngles": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "localPosition": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "localScale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "name": "shopar_shoe_right",
+                    "viewId": 2
+                },
+                {
+                    "animationEnabled": true,
+                    "components": [
+                        {
+                            "blendShapeWeightsExpanded": false,
+                            "bonesExpanded": false,
+                            "enabled": true,
+                            "material": "~/occluder",
+                            "mesh": "~/__dprs_int_f18caee1_d65d_4319_957b_2f6556abda06__/foot_occluder_mesh.armesh",
+                            "meshDriver": "none",
+                            "open": true,
+                            "type": "meshRenderer"
+                        }
+                    ],
+                    "depth": 0,
+                    "dynamicUv": "disabled",
+                    "editorAnimationsOpen": false,
+                    "editorOpen": false,
+                    "editorPropertyOpen": true,
+                    "editorSelectedAnimation": "",
+                    "enabled": true,
+                    "localEulerAngles": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "localPosition": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "localScale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "name": "foot_occluder_right",
+                    "viewId": 2
+                }
+            ],
+            "components": [
+                {
+                    "enabled": true,
+                    "left": false,
+                    "open": true,
+                    "type": "footPosition"
+                }
+            ],
+            "depth": 1,
+            "dynamicUv": "disabled",
+            "editorAnimationsOpen": false,
+            "editorOpen": true,
+            "editorPropertyOpen": true,
+            "editorSelectedAnimation": "",
+            "enabled": true,
+            "localEulerAngles": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "localPosition": [
+                -10.0,
+                0.0,
+                0.0
+            ],
+            "localScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "name": "foot_position_right",
+            "viewId": 2
+        },
+        {
+            "animationEnabled": true,
+            "components": [
+                {
+                    "colorB": 1.0,
+                    "colorG": 1.0,
+                    "colorR": 1.0,
+                    "distance": 0.0,
+                    "enabled": true,
+                    "intensity": 10.0,
+                    "lightSource": "directional",
+                    "open": true,
+                    "type": "light"
+                }
+            ],
+            "depth": 0,
+            "dynamicUv": "disabled",
+            "editorAnimationsOpen": false,
+            "editorOpen": false,
+            "editorPropertyOpen": true,
+            "editorSelectedAnimation": "",
+            "enabled": true,
+            "localEulerAngles": [
+                -0.3490658402442932,
+                0.1745329201221466,
+                -0.05235987901687622
+            ],
+            "localPosition": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "localScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "name": "light",
+            "viewId": 2
+        }
+    ],
+    "depth": 0,
+    "dynamicUv": "disabled",
+    "editorAnimationsOpen": false,
+    "editorOpen": true,
+    "editorPropertyOpen": true,
+    "editorSelectedAnimation": "",
+    "enabled": true,
+    "hiddenViewIds": [],
+    "localEulerAngles": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "localPosition": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "localScale": [
+        1.0,
+        1.0,
+        1.0
+    ],
+    "name": "Root",
+    "space": "camera",
+    "viewId": 2
+}

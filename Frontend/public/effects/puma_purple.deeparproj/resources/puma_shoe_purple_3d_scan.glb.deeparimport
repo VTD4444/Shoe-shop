@@ -1,0 +1,18 @@
+{
+    "convertScale": false,
+    "dataType": "model",
+    "generateSmoothNormals": true,
+    "importAnimations": true,
+    "limitBoneWeights": true,
+    "materialModelRefs": {
+        "default": [
+            "default.mat"
+        ]
+    },
+    "meshModelRefs": {
+        "Object_0": [
+            "Object_0.armesh"
+        ]
+    },
+    "type": "scene"
+}

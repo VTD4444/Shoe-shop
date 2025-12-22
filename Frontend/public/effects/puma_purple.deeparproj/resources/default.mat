@@ -1,0 +1,166 @@
+{
+    "flags": {
+        "blendMode": "off",
+        "cullMode": "off",
+        "enableDepthTest": true,
+        "writeAlpha": true,
+        "writeColor": true,
+        "writeDepth": true
+    },
+    "shader": "__dprs_int_f18caee1_d65d_4319_957b_2f6556abda06__/pbr_gltf_new_shader.dprx",
+    "uniformValues": {
+        "s_albedoMap": {
+            "texture": "_.jpg",
+            "type": "texture"
+        },
+        "s_envMapCubeUv": {
+            "texture": "__dprs_int_f18caee1_d65d_4319_957b_2f6556abda06__/sample_environment_map_2.png",
+            "type": "texture"
+        },
+        "s_normalMap": {
+            "texture": "_.png",
+            "type": "texture"
+        },
+        "u_ambientLightColor": {
+            "color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "dataType": "color",
+            "type": "vector"
+        },
+        "u_ambientLightIntensity": {
+            "dataType": "slider",
+            "type": "vector",
+            "value": 0.0
+        },
+        "u_diffuse": {
+            "color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "dataType": "color",
+            "type": "vector"
+        },
+        "u_emissive": {
+            "color": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "dataType": "color",
+            "type": "vector"
+        },
+        "u_envMapIntensity": {
+            "dataType": "slider",
+            "type": "vector",
+            "value": 1.0
+        },
+        "u_ior": {
+            "dataType": "slider",
+            "type": "vector",
+            "value": 1.5
+        },
+        "u_metalness": {
+            "dataType": "slider",
+            "type": "vector",
+            "value": 1.0
+        },
+        "u_normalScale": {
+            "data": [
+                1.0,
+                1.0
+            ],
+            "dataType": "numeric",
+            "type": "vector"
+        },
+        "u_opacity": {
+            "dataType": "slider",
+            "type": "vector",
+            "value": 1.0
+        },
+        "u_roughness": {
+            "dataType": "slider",
+            "type": "vector",
+            "value": 1.0
+        },
+        "u_specularColor": {
+            "color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "dataType": "color",
+            "type": "vector"
+        },
+        "u_specularIntensity": {
+            "dataType": "slider",
+            "type": "vector",
+            "value": 1.0
+        }
+    },
+    "uvTransformUniformValues": {
+        "u_mapRotation": {
+            "data": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "dataType": "numeric",
+            "type": "vector"
+        },
+        "u_mapScale": {
+            "data": [
+                1.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "dataType": "numeric",
+            "type": "vector"
+        },
+        "u_mapTranslation": {
+            "data": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "dataType": "numeric",
+            "type": "vector"
+        },
+        "u_normalMapRotation": {
+            "data": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "dataType": "numeric",
+            "type": "vector"
+        },
+        "u_normalMapScale": {
+            "data": [
+                1.0,
+                1.0,
+                0.0,
+                0.0
+            ],
+            "dataType": "numeric",
+            "type": "vector"
+        },
+        "u_normalMapTranslation": {
+            "data": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "dataType": "numeric",
+            "type": "vector"
+        }
+    }
+}
