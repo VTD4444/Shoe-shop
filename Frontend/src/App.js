@@ -19,13 +19,19 @@ import AddressBookPage from './pages/profile/AddressBookPage.jsx';
 import ProfileLayout from './layouts/ProfileLayout.jsx';
 import SideBarAdmin from './components/SideBar_Admin.jsx';
 import ShoeTryOn from './components/ShoeTryOn.jsx';
+import AdminLayout from './layouts/AdminLayout.jsx';
 
 function App() {
   return (
     <>
       <Routes>
-        <Route path="/admin" element={<SideBarAdmin />} />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Dashboard />} />
+
+        </Route>
+
         <Route path='/product/try-on' element={<ShoeTryOn />} />
+
         <Route
           path="*"
           element={
@@ -51,7 +57,7 @@ function App() {
             </MainLayout>
           }
         />
-      </Routes>
+      </Routes >
       <ToastContainer position="bottom-right" autoClose={2000} theme="dark" />
     </>
   );
