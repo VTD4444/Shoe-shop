@@ -647,4 +647,5 @@ export default {
   cancelOrder,
   getOrderDetail,
   getAllOrders,
+  changeOrderStatus,
 };
