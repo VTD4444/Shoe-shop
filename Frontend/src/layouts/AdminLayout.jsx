@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import {
   FaBox,
@@ -6,12 +6,15 @@ import {
   FaUserFriends,
   FaCog,
   FaBell,
+  FaSignOutAlt,
 } from "react-icons/fa";
 import { MdSpaceDashboard } from "react-icons/md";
+import { toast } from "react-toastify";
 
 const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -46,6 +49,16 @@ const AdminLayout = () => {
     );
     return currentItem ? currentItem.name : "Trang quản trị";
   };
+
+  const handleLogout = () => {
+    if (window.confirm("Bạn có chắc muốn đăng xuất?")) {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user");
+      toast.success("Đăng xuất thành công");
+      navigate("/admin/login");
+    }
+  };
+
   return (
     <div className="flex h-screen bg-[#F3F4F6] font-sans">
       <aside className="w-64 bg-white border-r border-gray-200 flex-col hidden lg:flex fixed h-full z-10">
@@ -111,16 +124,32 @@ const AdminLayout = () => {
               <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
             </button>
 
-            <div className="flex items-center gap-3 pl-6 border-l border-gray-200">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold text-gray-900">Admin User</p>
-                <p className="text-xs text-gray-500">Quản lý cửa hàng</p>
-              </div>
-              <img
-                src="https://ui-avatars.com/api/?name=Admin+User&background=0D8ABC&color=fff"
-                alt="Admin"
-                className="w-9 h-9 rounded-full border border-gray-200"
-              />
+            <div className="relative">
+              <button
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                className="flex items-center gap-3 pl-6 border-l border-gray-200 hover:bg-gray-50 transition-colors p-2 rounded-lg"
+              >
+                <div className="text-right hidden sm:block">
+                  <p className="text-sm font-bold text-gray-900">Admin User</p>
+                  <p className="text-xs text-gray-500">Quản lý cửa hàng</p>
+                </div>
+                <img
+                  src="https://ui-avatars.com/api/?name=Admin+User&background=0D8ABC&color=fff"
+                  alt="Admin"
+                  className="w-9 h-9 rounded-full border border-gray-200"
+                />
+              </button>
+
+              {isProfileOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 border border-gray-100 animate-fade-in z-50">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                  >
+                    <FaSignOutAlt /> Đăng xuất
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>
