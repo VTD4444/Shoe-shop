@@ -17,7 +17,7 @@ const ShoeTryOn = () => {
             "7dee2c8693349cb739694465bbc4f888b3296b08ee3a199952b79bd1d524aa1c714b0a050ba6287d",
           previewElement: canvasRef.current,
 
-          effect: "/effects/test.deepar",
+          effect: "/effects/tc_9700.deepar",
 
           // CẤU HÌNH CAMERA SAU (Bắt buộc cho thử giày)
           additionalOptions: {
