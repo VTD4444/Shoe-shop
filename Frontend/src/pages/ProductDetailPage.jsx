@@ -281,13 +281,6 @@ const ProductDetailPage = () => {
                   </button>
                 </div>
                 <ShoeTryOn />
-                {/* Logo che DeepAR.ai */}
-                <img
-                  src="/logo.png"
-                  alt="Shoe Shop Logo"
-                  className="absolute top-20 right-8 z-20 w-64 h-auto opacity-95 pointer-events-none select-none"
-                  style={{ maxWidth: "350px" }}
-                />
               </div>
             </div>
           )}
