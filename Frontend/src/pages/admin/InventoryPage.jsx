@@ -3,10 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import EditProductModal from '../../components/admin/EditProductModal';
 import AddProductModal from '../../components/admin/AddProductModal';
 
-const BASE_URL = 'http://localhost:5000/products';
-const API_INVENTORY = `${BASE_URL}/inventory`;
-const adminToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYzQ4Nzg1MjYtNDYyNi00ZWM0LWI4ZDMtODE3MWM4NjhjNGUwIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzY2Mzk0NjA1fQ._Yix4G-8VPJZ_V_E6abiNplMX71e0OiJjsFqQBjCM98";
-const API_METADATA = `${BASE_URL}/filters`;
+import axiosClient from '../../services/axiosClient';
 
 const IconSearch = ({ className }) => (<svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>);
 const IconFilter = ({ className }) => (<svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>);
@@ -34,27 +31,16 @@ const InventoryPage = () => {
     const fetchInventory = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await fetch(API_INVENTORY, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    "Authorization": `Bearer ${adminToken}`
-                },
-                body: JSON.stringify(filters),
-            });
-            const result = await response.json();
-            if (response.ok) {
-                setData(result.data);
-                setPagination(result.meta);
-            }
+            const response = await axiosClient.post('/products/inventory', filters);
+            setData(response.data);
+            setPagination(response.meta);
         } finally { setLoading(false); }
     }, [filters]);
 
     useEffect(() => {
         const fetchMeta = async () => {
             try {
-                const res = await fetch(API_METADATA);
-                const data = await res.json();
+                const data = await axiosClient.get('/products/filters');
                 setMetadata(data);
             } catch (e) { console.error(e) }
         };

@@ -17,12 +17,7 @@ const OrdersManagement = () => {
     try {
       setLoading(true);
       const response = await orderService.getAllOrders();
-      // Assuming response is an array of orders directly, checking standard axiosClient response
-      // Based on order.route.js: router.get("/all", ... getAllOrders)
-      // order.controller.js: return res.status(200).json(orders);
-      // axiosClient returns response.data
-      // axiosClient returns response.data
-      // Sort orders by created_at descending (newest first)
+
       const sortedOrders = response.sort(
         (a, b) => new Date(b.created_at) - new Date(a.created_at)
       );

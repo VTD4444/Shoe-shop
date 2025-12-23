@@ -39,41 +39,82 @@ const getStats = asyncHandler(async (req, res) => {
 
 // API 2: Lấy Top 5 biến thể bán chạy nhất
 const getTopSellingProducts = asyncHandler(async (req, res) => {
-  const topVariants = await db.OrderItem.findAll({
+  // B1: Lấy top variant_id dựa trên số lượng bán (nhóm theo variant_id)
+  const topVariantsRaw = await db.OrderItem.findAll({
     attributes: [
       'variant_id',
-      [db.sequelize.fn('SUM', db.sequelize.col('quantity')), 'total_sold'] // Hàm tính tổng
+      [db.sequelize.fn('SUM', db.sequelize.col('quantity')), 'total_sold']
     ],
-    group: ['OrderItem.variant_id', 'variant.variant_id', 'variant->product.product_id'], // Group by để tính tổng
+    group: ['variant_id'],
     order: [[db.sequelize.literal('total_sold'), 'DESC']],
-    limit: 5,
+    limit: 5
+  });
+
+  const topVariantIds = topVariantsRaw.map(item => item.variant_id);
+
+  // B2: Lấy thông tin chi tiết của các variant cùng với Product và Media (ảnh)
+  const detailedVariants = await db.ProductVariant.findAll({
+    where: {
+      variant_id: {
+        [Op.in]: topVariantIds
+      }
+    },
     include: [
       {
-        model: db.ProductVariant,
-        as: 'variant',
-        attributes: ['sku', 'size', 'color_name', 'stock_quantity'],
+        model: db.Product,
+        as: 'product',
+        attributes: ['name'],
         include: [
           {
-            model: db.Product,
-            as: 'product',
-            attributes: ['name']
+            model: db.ProductMedia,
+            as: 'media',
+            attributes: ['url'],
+            // Ưu tiên lấy ảnh thumbnail, nếu không thì lấy ảnh bất kỳ
+            required: false,
+            where: { is_thumbnail: true }
           }
         ]
       }
     ]
   });
 
-  const formattedData = topVariants.map(item => {
-    const variant = item.variant;
+  // Nếu không tìm thấy ảnh thumbnail, fallback có thể cần query lại hoặc xử lý ở frontend,
+  // nhưng ở đây ta giả định data chuẩn hoặc chấp nhận null. 
+  // Để chắc chắn hơn, ta có thể bỏ where is_thumbnail ở include trên và filter bằng JS,
+  // nhưng để tối ưu query ta giữ nguyên, nếu null thì frontend hiển thị placeholder.
+
+  // B3: Merge data và format
+  const formattedData = topVariantsRaw.map(statItem => {
+    const variantDetail = detailedVariants.find(v => v.variant_id === statItem.variant_id);
+
+    if (!variantDetail) return null;
+
+    const product = variantDetail.product;
+    const totalSold = parseInt(statItem.dataValues.total_sold);
+    const currentStock = variantDetail.stock_quantity;
+
+    // Xử lý status
+    let stockStatus = 'In Stock';
+    if (currentStock === 0) stockStatus = 'Out of Stock';
+    else if (currentStock <= 10) stockStatus = 'Low Stock';
+    else if (currentStock >= 100) stockStatus = 'High Stock';
+
+    // Lấy ảnh
+    let imageUrl = null;
+    if (product && product.media && product.media.length > 0) {
+      imageUrl = product.media[0].url;
+    }
+
     return {
-      variant_id: item.variant_id,
-      product_name: variant ? variant.product.name : 'Sản phẩm đã xóa',
-      sku: variant ? variant.sku : 'N/A',
-      attribute: variant ? `${variant.color_name} / ${variant.size}` : 'N/A',
-      total_sold: parseInt(item.dataValues.total_sold),
-      current_stock: variant ? variant.stock_quantity : 0
+      product_name: product ? product.name : 'Sản phẩm đã xóa',
+      product_image: imageUrl,
+      sku: variantDetail.sku,
+      variant: `${variantDetail.size} / ${variantDetail.color_name}`,
+      total_sold: totalSold,
+      current_stock: currentStock,
+      stock_status: stockStatus
     };
-  });
+  }).filter(item => item !== null);
 
   return res.status(200).json({
     message: "Lấy top sản phẩm bán chạy thành công",
@@ -81,7 +122,46 @@ const getTopSellingProducts = asyncHandler(async (req, res) => {
   });
 });
 
+// API 3: Biểu đồ doanh thu
+const getRevenueChart = asyncHandler(async (req, res) => {
+  const { period = '7days' } = req.query;
+
+  let startDate = new Date();
+  if (period === '7days') {
+    startDate.setDate(startDate.getDate() - 7);
+  } else if (period === '30days') {
+    startDate.setDate(startDate.getDate() - 30);
+  } else if (period === '90days') {
+    startDate.setDate(startDate.getDate() - 90);
+  } else {
+    startDate.setDate(startDate.getDate() - 7);
+  }
+
+
+  const revenueData = await db.Order.findAll({
+    attributes: [
+      [db.sequelize.fn('DATE', db.sequelize.col('created_at')), 'date'],
+      [db.sequelize.fn('SUM', db.sequelize.col('total_amount')), 'revenue']
+    ],
+    where: {
+      payment_status: 'paid',
+      created_at: {
+        [Op.gte]: startDate
+      }
+    },
+    group: [db.sequelize.fn('DATE', db.sequelize.col('created_at'))],
+    order: [[db.sequelize.fn('DATE', db.sequelize.col('created_at')), 'ASC']]
+  });
+
+  return res.status(200).json({
+    message: "Lấy dữ liệu biểu đồ thành công",
+    data: revenueData
+  });
+});
+
+
 export default {
   getStats,
-  getTopSellingProducts
+  getTopSellingProducts,
+  getRevenueChart
 };
