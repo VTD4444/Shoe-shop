@@ -20,12 +20,13 @@ import ProfileLayout from './layouts/ProfileLayout.jsx';
 import ShoeTryOn from './components/ShoeTryOn.jsx';
 import AdminLayout from './layouts/AdminLayout.jsx';
 import InventoryPage from './pages/admin/InventoryPage.jsx';
+import DashboardPage from './pages/admin/DashboardPage.jsx';
 function App() {
   return (
     <>
       <Routes>
         <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<div>Dashboard</div>} />
+          <Route index element={<DashboardPage />} />
           <Route path="products" element={<InventoryPage />} />
 
         </Route>

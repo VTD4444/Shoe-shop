@@ -128,7 +128,6 @@ const InventoryPage = () => {
                 </div>
             </div>
 
-            {/* TABLE */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 {loading ? (
                     <div className="p-12 text-center text-gray-400">Đang tải dữ liệu...</div>
@@ -145,13 +144,11 @@ const InventoryPage = () => {
                         <tbody className="divide-y divide-gray-100">
                             {data.map((product) => (
                                 <tr key={product.product_id} className="hover:bg-gray-50/50 transition-colors">
-                                    {/* CỘT 1 */}
                                     <td className="px-6 py-5 align-top">
                                         <div className="w-20 h-20 rounded-lg border border-gray-100 overflow-hidden bg-white p-1 shadow-sm">
                                             <img src={product.image} alt="" className="w-full h-full object-contain" onError={(e) => e.target.src = 'https://via.placeholder.com/150'} />
                                         </div>
                                     </td>
-                                    {/* CỘT 2 */}
                                     <td className="px-6 py-5 align-top">
                                         <h3 className="text-base font-bold text-gray-900 mb-1">{product.product_name}</h3>
                                         <div className="text-sm text-gray-500 space-y-1">
@@ -160,7 +157,6 @@ const InventoryPage = () => {
                                             <p className="text-blue-600 font-bold text-base mt-2">{formatCurrency(product.variants[0]?.original_price || 0)}</p>
                                         </div>
                                     </td>
-                                    {/* CỘT 3 - Đã bỏ nút cây bút */}
                                     <td className="px-6 py-5 align-top">
                                         <div className="space-y-3">
                                             {product.variants.map((variant) => (
@@ -169,7 +165,6 @@ const InventoryPage = () => {
                                                         <span className="text-sm font-semibold text-gray-800">{variant.attribute}</span>
                                                         <span className="text-[11px] text-gray-400 font-mono uppercase mt-0.5">{variant.sku || 'NO-SKU'}</span>
                                                     </div>
-                                                    {/* Chỉ hiện số lượng tồn kho */}
                                                     <span className={`px-2.5 py-1 rounded text-xs font-bold min-w-[30px] text-center ${variant.stock_quantity <= 5 ? 'bg-red-100 text-red-600' : 'bg-gray-200 text-gray-700'}`}>
                                                         {variant.stock_quantity}
                                                     </span>
@@ -177,7 +172,6 @@ const InventoryPage = () => {
                                             ))}
                                         </div>
                                     </td>
-                                    {/* CỘT 4 - Chỉ còn 1 nút Sửa */}
                                     <td className="px-6 py-5 align-top text-right">
                                         <div className="flex flex-col gap-2 items-end">
                                             <button
