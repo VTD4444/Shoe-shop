@@ -21,13 +21,11 @@ const DashboardPage = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Sử dụng axiosClient đã cấu hình sẵn
                 const [statsRes, topRes] = await Promise.all([
                     axiosClient.get('/dashboard/stats'),
                     axiosClient.get('/dashboard/top-products')
                 ]);
 
-                // axiosClient interceptor đã trả về response.data, nên ở đây statsRes chính là data object
                 if (statsRes && statsRes.data) {
                     setStats(statsRes.data);
                 }
@@ -50,7 +48,6 @@ const DashboardPage = () => {
             try {
                 const res = await axiosClient.get(`/dashboard/revenue-chart?period=${timeRange}`);
                 if (res && res.data) {
-                    // Format date for display if needed
                     const formattedData = res.data.map(item => ({
                         ...item,
                         displayDate: new Date(item.date).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })

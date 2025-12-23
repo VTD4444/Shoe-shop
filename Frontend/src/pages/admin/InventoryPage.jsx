@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 // Import Modal
 import EditProductModal from '../../components/admin/EditProductModal';
 import AddProductModal from '../../components/admin/AddProductModal';
+import AddVariantModal from '../../components/admin/AddVariantModal';
 
 import axiosClient from '../../services/axiosClient';
 
@@ -18,6 +19,10 @@ const InventoryPage = () => {
 
     const [isEditMasterOpen, setIsEditMasterOpen] = useState(false);
     const [isAddOpen, setIsAddOpen] = useState(false);
+
+    // Add Variant State
+    const [isAddVariantOpen, setIsAddVariantOpen] = useState(false);
+    const [selectedProductForVariant, setSelectedProductForVariant] = useState(null);
 
     const [selectedProduct, setSelectedProduct] = useState(null);
 
@@ -52,6 +57,11 @@ const InventoryPage = () => {
     const handleEditProductClick = (product) => {
         setSelectedProduct(product);
         setIsEditMasterOpen(true);
+    };
+
+    const handleAddVariantClick = (product) => {
+        setSelectedProductForVariant(product);
+        setIsAddVariantOpen(true);
     };
 
     return (
@@ -161,7 +171,7 @@ const InventoryPage = () => {
                                     <td className="px-6 py-5 align-top text-right">
                                         <div className="flex flex-col gap-2 items-end">
                                             <button
-                                                onClick={() => alert("Tính năng thêm biến thể chưa làm")}
+                                                onClick={() => handleAddVariantClick(product)}
                                                 className="flex items-center justify-center gap-1.5 w-40 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-all"
                                             >
                                                 <IconPlus className="w-4 h-4" /> Thêm biến thể
@@ -197,6 +207,15 @@ const InventoryPage = () => {
                     isOpen={isAddOpen}
                     onClose={() => setIsAddOpen(false)}
                     metadata={metadata}
+                    onSuccess={fetchInventory}
+                />
+            )}
+
+            {isAddVariantOpen && selectedProductForVariant && (
+                <AddVariantModal
+                    isOpen={isAddVariantOpen}
+                    onClose={() => setIsAddVariantOpen(false)}
+                    product={selectedProductForVariant}
                     onSuccess={fetchInventory}
                 />
             )}
