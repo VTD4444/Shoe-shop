@@ -7,6 +7,7 @@ import {
   FaCog,
   FaBell,
   FaSignOutAlt,
+  FaTicketAlt,
 } from "react-icons/fa";
 import { MdSpaceDashboard } from "react-icons/md";
 import { toast } from "react-toastify";
@@ -38,9 +39,9 @@ const AdminLayout = () => {
       path: "/admin/orders",
     },
     {
-      name: "Khách hàng",
-      icon: <FaUserFriends size={18} />,
-      path: "/admin/users",
+      name: "Vouchers",
+      icon: <FaTicketAlt size={18} />,
+      path: "/admin/vouchers",
     },
   ];
   const getCurrentPageName = () => {
