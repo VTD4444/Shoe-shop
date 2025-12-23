@@ -1,12 +1,14 @@
 import React from 'react';
-import { Link, useLocation, Outlet } from 'react-router-dom';
+import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import { FiUser, FiMapPin, FiLock, FiPackage, FiLogOut } from 'react-icons/fi';
 import { useDispatch } from 'react-redux';
 import { logout } from '../redux/slices/authSlice';
+import { clearCartLocal } from '../redux/slices/cartSlice';
 
 const ProfileLayout = () => {
   const location = useLocation();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const menuItems = [
     { label: 'Hồ sơ cá nhân', path: '/profile', icon: <FiUser /> },
@@ -18,7 +20,7 @@ const ProfileLayout = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
       <div className="flex flex-col md:flex-row gap-8">
-        
+
         {/* SIDEBAR */}
         <aside className="w-full md:w-64 flex-shrink-0">
           <h2 className="text-xl font-black uppercase mb-6">Tài khoản</h2>
@@ -28,16 +30,20 @@ const ProfileLayout = () => {
                 key={item.path}
                 to={item.path}
                 className={`flex items-center space-x-3 px-4 py-3 text-sm font-bold transition-colors
-                  ${location.pathname === item.path 
-                    ? 'bg-black text-white' 
+                  ${location.pathname === item.path
+                    ? 'bg-black text-white'
                     : 'bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-black'}`}
               >
                 {item.icon}
                 <span>{item.label}</span>
               </Link>
             ))}
-            <button 
-              onClick={() => dispatch(logout())}
+            <button
+              onClick={() => {
+                dispatch(logout());
+                dispatch(clearCartLocal());
+                navigate('/login');
+              }}
               className="w-full flex items-center space-x-3 px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 transition-colors"
             >
               <FiLogOut />
