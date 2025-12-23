@@ -1,9 +1,8 @@
-import React, { useState } from 'react'; // 1. Phải nhập useState vào
+import React, { useState } from 'react'; 
 import { MdSpaceDashboard } from 'react-icons/md';
 import { FaBox, FaShoppingCart, FaUserFriends } from 'react-icons/fa';
 
 const SideBar_Admin = () => {
-    // 2. Tạo trí nhớ: Mặc định đang chọn "Dashboard"
     const [dangChon, setDangChon] = useState('Dashboard');
 
     const menuItems = [

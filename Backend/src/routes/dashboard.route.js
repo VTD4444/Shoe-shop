@@ -9,5 +9,6 @@ router.use(verifyToken);
 router.use(isAdmin);
 router.get('/stats', dashboardController.getStats);
 router.get('/top-products', dashboardController.getTopSellingProducts);
+router.get('/revenue-chart', dashboardController.getRevenueChart);
 
 export default router;

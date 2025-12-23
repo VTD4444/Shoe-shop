@@ -17,9 +17,7 @@ const AdminLogin = () => {
       const data = { email, password };
       const response = await authService.adminLogin(data);
 
-      // response.token contains the JWT
       localStorage.setItem("access_token", response.token);
-      // Optionally store user info
       localStorage.setItem("user", JSON.stringify(response.user));
 
       toast.success("Đăng nhập thành công");
