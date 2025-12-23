@@ -86,7 +86,7 @@ const searchProducts = asyncHandler(async (req, res) => {
         required: false,
         limit: 1
       },
-        {
+      {
         model: db.ProductVariant,
         as: 'variants',
         attributes: ['variant_id']
@@ -95,7 +95,7 @@ const searchProducts = asyncHandler(async (req, res) => {
     distinct: true
   });
 
-const products = rows.map(p => {
+  const products = rows.map(p => {
     const product = p.toJSON();
 
     return {
@@ -219,7 +219,7 @@ const getTrendingProducts = asyncHandler(async (req, res) => {
       average_rating: parseFloat(product.average_rating),
       sold_count: product.sold_count,
       thumbnail: (product.media && product.media.length > 0) ? product.media[0].url : null,
-        brand_name: product.brand ? product.brand.name : null
+      brand_name: product.brand ? product.brand.name : null
     };
   });
 
@@ -305,7 +305,7 @@ const getInventory = asyncHandler(async (req, res) => {
   if (search) {
     productWhere.name = { [Op.iLike]: `%${search}%` };
   }
-    if (brand_id) {
+  if (brand_id) {
     productWhere.brand_id = brand_id;
   }
   if (category_id) {
@@ -391,7 +391,7 @@ const getInventory = asyncHandler(async (req, res) => {
       product_id: product.product_id,
       product_name: product.name,
       image: product.media?.[0]?.url || 'https://via.placeholder.com/150',
-        description: product.description || '',
+      description: product.description || '',
       brand_id: product.brand?.brand_id || null,
       brand_name: product.brand?.name || 'Chưa cập nhật',
 
@@ -461,9 +461,9 @@ const updateProductMaster = asyncHandler(async (req, res) => {
           let newModifier = undefined;
 
           if (item.final_price !== undefined) {
-             newModifier = parseFloat(item.final_price) - newBasePrice;
+            newModifier = parseFloat(item.final_price) - newBasePrice;
           } else if (item.price_modifier !== undefined) {
-             newModifier = item.price_modifier;
+            newModifier = item.price_modifier;
           }
 
           const updateData = {};
@@ -500,6 +500,116 @@ const updateProductMaster = asyncHandler(async (req, res) => {
     return res.status(500).json({ message: "Lỗi cập nhật sản phẩm", error: error.message });
   }
 });
+
+const createProduct = asyncHandler(async (req, res) => {
+  const {
+    name,
+    description,
+    base_price,
+    brand_id,
+    category_id,
+    image_url,
+    is_active = true
+  } = req.body;
+
+  if (!name || !base_price) {
+    return res.status(400).json({ message: "Tên và giá gốc là bắt buộc" });
+  }
+
+  const t = await db.sequelize.transaction();
+
+  try {
+    const newProduct = await db.Product.create({
+      name,
+      description,
+      base_price: parseFloat(base_price),
+      brand_id: brand_id || null,
+      category_id: category_id || null,
+      is_active,
+      sold_count: 0,
+      average_rating: 0
+    }, { transaction: t });
+
+    // Tạo ảnh thumbnail nếu có
+    if (image_url) {
+      await db.ProductMedia.create({
+        product_id: newProduct.product_id,
+        url: image_url,
+        media_type: 'image',
+        is_thumbnail: true
+      }, { transaction: t });
+    }
+
+    // Tạm thời tạo 1 variant mặc định nếu muốn, hoặc để trống
+    // Logic: Nếu không có variant, sản phẩm có thể không hiện lên ở một số chỗ query inner join
+    // Tạo 1 variant mặc định: Free Size / Default Color
+    await db.ProductVariant.create({
+      product_id: newProduct.product_id,
+      color_name: 'Default',
+      color_hex: '#000000',
+      size: 'Free',
+      sku: `SKU-${newProduct.product_id}-${Date.now()}`,
+      stock_quantity: 0,
+      price_modifier: 0
+    }, { transaction: t });
+
+    await t.commit();
+
+    return res.status(201).json({
+      message: "Tạo sản phẩm thành công!",
+      data: newProduct
+    });
+
+  } catch (error) {
+    await t.rollback();
+    console.error("Create Product Error:", error);
+    return res.status(500).json({ message: "Lỗi tạo sản phẩm", error: error.message });
+  }
+});
+
+const addProductVariant = asyncHandler(async (req, res) => {
+  const { id } = req.params; // product_id
+  const {
+    sku,
+    color_name,
+    color_hex,
+    size,
+    stock_quantity,
+    price_modifier // chênh lệch so với giá gốc
+  } = req.body;
+
+  if (!sku) {
+    return res.status(400).json({ message: "SKU là bắt buộc" });
+  }
+
+  // Check product exists
+  const product = await db.Product.findByPk(id);
+  if (!product) {
+    return res.status(404).json({ message: "Sản phẩm không tồn tại" });
+  }
+
+  // Check SKU unique
+  const existingSku = await db.ProductVariant.findOne({ where: { sku } });
+  if (existingSku) {
+    return res.status(400).json({ message: "Mã SKU này đã tồn tại!" });
+  }
+
+  const newVariant = await db.ProductVariant.create({
+    product_id: id,
+    sku,
+    color_name,
+    color_hex: color_hex || '#000000',
+    size,
+    stock_quantity: parseInt(stock_quantity) || 0,
+    price_modifier: parseFloat(price_modifier) || 0
+  });
+
+  return res.status(201).json({
+    message: "Thêm biến thể thành công!",
+    data: newVariant
+  });
+});
+
 export default {
-  searchProducts,getFilterMetadata,getTrendingProducts,  getProductDetail,getInventory,updateProductMaster
+  searchProducts, getFilterMetadata, getTrendingProducts, getProductDetail, getInventory, updateProductMaster, createProduct, addProductVariant
 };

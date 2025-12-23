@@ -637,7 +637,6 @@ const changeOrderStatus = asyncHandler(async (req, res) => {
   const orderId = req.body.orderId;
   const newStatus = req.body.status;
   const order = await db.Order.findByPk(orderId);
-  console.log(order);
   if (!order) {
     return res.status(404).json({ message: "Order not found" });
   }
