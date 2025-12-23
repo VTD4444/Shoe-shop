@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: "http://192.168.155.181:5000", // Đổi port 5000 theo port backend của bạn
+  baseURL: "https://z8ntjdxn-5000.asse.devtunnels.ms/", // Đổi port 5000 theo port backend của bạn
   headers: {
     "Content-Type": "application/json",
   },
